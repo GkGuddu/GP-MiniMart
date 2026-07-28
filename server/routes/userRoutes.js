@@ -174,7 +174,8 @@ router.post('/forgotpassword', async (req, res) => {
 
     // Create reset url (simulated)
     // In production, this would be the frontend URL
-    const resetUrl = `${req.protocol}://localhost:5173/resetpassword/${resetToken}`;
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    const resetUrl = `${frontendUrl}/resetpassword/${resetToken}`;
 
     const message = `You are receiving this email because you (or someone else) has requested the reset of a password. Please make a PUT request to: \n\n ${resetUrl}`;
 
