@@ -35,14 +35,6 @@ GP MiniMart is a full-stack e-commerce application designed for local grocery st
     npm install
     ```
 
-3.  **Environment Variables:**
-    Create a `.env` file in the `server` directory with the following variables:
-    ```env
-    PORT=5000
-    MONGO_URI=<your-mongodb-uri>
-    JWT_SECRET=<your-jwt-secret>
-    ```
-
 ## Running the Application
 
 ### Development Mode
