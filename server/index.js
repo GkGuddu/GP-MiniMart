@@ -35,9 +35,17 @@ io.on('connection', (socket) => {
 
 const compression = require('compression');
 
+const corsOptions = {
+    origin: process.env.NODE_ENV === 'production'
+        ? [process.env.CLIENT_URL || '*']
+        : '*',
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+    credentials: true,
+};
+
 // Middleware
 app.use(express.json());
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(compression());
 app.use(require('helmet')());
 
@@ -66,6 +74,11 @@ app.use('/api/ai', require('./routes/aiRoutes'));
 
 app.get('/', (req, res) => {
     res.send('Kirana Shop API is running...');
+});
+
+// Health check endpoint - used by uptime monitors to prevent Render cold starts
+app.get('/health', (req, res) => {
+    res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
 app.use(notFound);
