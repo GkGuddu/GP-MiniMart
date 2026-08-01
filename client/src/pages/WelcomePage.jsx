@@ -1,44 +1,83 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { gsap } from 'gsap';
 
 const WelcomePage = () => {
     const navigate = useNavigate();
+    const containerRef = useRef(null);
 
     useEffect(() => {
-        // Redirect to the home page after 3 seconds
-        const timer = setTimeout(() => {
-            navigate('/home');
-        }, 3000);
+        if (!containerRef.current) return;
 
-        return () => clearTimeout(timer);
+        const ctx = gsap.context(() => {
+            const tl = gsap.timeline({
+                onComplete: () => {
+                    navigate('/home');
+                }
+            });
+
+            // Fast 2.0-Second GSAP Animated Splash Timeline
+            tl.fromTo(
+                '.gsap-welcome-logo',
+                { scale: 0.4, opacity: 0, rotation: -15 },
+                { scale: 1, opacity: 1, rotation: 0, duration: 0.5, ease: 'back.out(1.7)' }
+            )
+            .fromTo(
+                '.gsap-welcome-title',
+                { opacity: 0, y: 30 },
+                { opacity: 1, y: 0, duration: 0.5, ease: 'power3.out' },
+                '-=0.2'
+            )
+            .fromTo(
+                '.gsap-welcome-sub',
+                { opacity: 0, y: 20 },
+                { opacity: 1, y: 0, duration: 0.4, ease: 'power2.out' },
+                '-=0.2'
+            )
+            .fromTo(
+                '.gsap-welcome-dots span',
+                { scale: 0, opacity: 0 },
+                { scale: 1, opacity: 1, stagger: 0.1, duration: 0.3 },
+                '-=0.2'
+            )
+            // Hold briefly, then exit at 1.7s mark (completing at 2.0s)
+            .to(
+                containerRef.current,
+                { opacity: 0, scale: 1.05, duration: 0.3, ease: 'power2.inOut' },
+                '+=0.4'
+            );
+        }, containerRef);
+
+        return () => ctx.revert();
     }, [navigate]);
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900 overflow-hidden">
-            {/* Background animated gradients */}
-            <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-blue-500/30 rounded-full blur-[120px] animate-pulse"></div>
-            <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-emerald-500/30 rounded-full blur-[120px] animate-pulse delay-1000"></div>
+        <div ref={containerRef} className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950 overflow-hidden">
+            {/* Background animated glowing orbs */}
+            <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-indigo-600/30 rounded-full blur-[140px] animate-pulse"></div>
+            <div className="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] bg-emerald-500/30 rounded-full blur-[140px] animate-pulse"></div>
 
-            <div className="relative text-center z-10 p-8 flex flex-col items-center">
-                {/* Logo or Icon */}
-                <div className="mb-8 relative animate-bounce flex items-center justify-center h-24 w-24 bg-white/10 rounded-2xl backdrop-blur-md border border-white/20 shadow-[0_0_30px_rgba(255,255,255,0.1)]">
-                    <img src="/logo.png" alt="GP MiniMart Logo" className="h-16 w-16 object-contain" />
+            <div className="relative text-center z-10 p-8 flex flex-col items-center max-w-xl">
+                {/* Logo Badge */}
+                <div className="gsap-welcome-logo mb-6 flex items-center justify-center h-28 w-28 bg-white/10 rounded-3xl backdrop-blur-xl border border-white/20 shadow-[0_0_50px_rgba(79,70,229,0.3)]">
+                    <img src="/logo.png" alt="GP MiniMart Logo" className="h-20 w-20 object-contain drop-shadow-lg" />
                 </div>
 
-                {/* Text Animation */}
-                <h1 className="text-4xl md:text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400 mb-4 animate-fade-in-up">
+                {/* Main Animated Title */}
+                <h1 className="gsap-welcome-title text-4xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 via-cyan-300 to-indigo-300 mb-4 tracking-tight">
                     Welcome to GP MiniMart
                 </h1>
 
-                <p className="text-slate-300 text-lg md:text-xl font-medium max-w-lg mx-auto opacity-0 animate-fade-in-up delay-500">
-                    Your premium destination for everyday groceries and essentials.
+                {/* Subtitle */}
+                <p className="gsap-welcome-sub text-slate-300 text-base md:text-lg font-medium">
+                    Your trusted neighbourhood grocery store, now at your fingertips.
                 </p>
 
-                {/* Loading indicator */}
-                <div className="mt-12 flex space-x-2 justify-center opacity-0 animate-fade-in-up delay-700">
-                    <div className="w-3 h-3 bg-emerald-400 rounded-full animate-bounce"></div>
-                    <div className="w-3 h-3 bg-emerald-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                    <div className="w-3 h-3 bg-emerald-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                {/* 2-Second Animated Progress Indicator */}
+                <div className="gsap-welcome-dots mt-8 flex space-x-2 justify-center items-center">
+                    <span className="w-3 h-3 bg-emerald-400 rounded-full"></span>
+                    <span className="w-3 h-3 bg-cyan-400 rounded-full"></span>
+                    <span className="w-3 h-3 bg-indigo-400 rounded-full"></span>
                 </div>
             </div>
         </div>

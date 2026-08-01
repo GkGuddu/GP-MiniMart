@@ -174,6 +174,15 @@ const importData = async () => {
         ]);
         const adminUser = createdUsers[0]._id;
 
+        // 1b. Create Coupons
+        const futureDate = new Date();
+        futureDate.setMonth(futureDate.getMonth() + 6);
+        await Coupon.insertMany([
+            { code: 'WELCOME10', discount: 10, isActive: true, expiryDate: futureDate },
+            { code: 'KIRANA50', discount: 15, isActive: true, expiryDate: futureDate },
+            { code: 'SAVE20', discount: 20, isActive: true, expiryDate: futureDate }
+        ]);
+
         // 2. Create Categories & Subcategories
         const categoryMap = {}; // name -> _id
         const subcategoryMap = {}; // name -> _id

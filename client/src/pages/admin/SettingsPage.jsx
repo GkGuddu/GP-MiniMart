@@ -68,10 +68,6 @@ const SettingsPage = () => {
         }
     };
 
-    useEffect(() => {
-        fetchSettings();
-    }, []);
-
     const fetchSettings = async () => {
         try {
             const { data } = await api.get('/settings');
@@ -85,6 +81,10 @@ const SettingsPage = () => {
             setLoading(false);
         }
     };
+
+    useEffect(() => {
+        fetchSettings();
+    }, []);
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;

@@ -142,7 +142,7 @@ const Footer = () => {
                 </div>
 
                 <div className="flex flex-col md:flex-row justify-between items-center text-gray-500 text-sm gap-4">
-                    <p>&copy; {currentYear} {settings?.storeName || 'MiniMart'}. Made with ❤️ in Bhopal.</p>
+                    <p>&copy; {currentYear} {settings?.storeName || 'MiniMart'}</p>
                     <div className="flex space-x-8">
                         <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
                         <a href="#" className="hover:text-white transition-colors">Terms of Service</a>

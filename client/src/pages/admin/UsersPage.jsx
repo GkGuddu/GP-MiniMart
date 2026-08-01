@@ -10,10 +10,6 @@ const UsersPage = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const { user: currentUser } = useContext(AuthContext);
 
-    useEffect(() => {
-        fetchUsers();
-    }, []);
-
     const fetchUsers = async () => {
         try {
             const { data } = await api.get('/users');
@@ -25,6 +21,10 @@ const UsersPage = () => {
             setLoading(false);
         }
     };
+
+    useEffect(() => {
+        fetchUsers();
+    }, []);
 
     const handleBlockUser = async (id, isBlocked) => {
         if (id === currentUser._id) {

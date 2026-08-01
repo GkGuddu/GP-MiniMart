@@ -10,10 +10,6 @@ const OrdersPage = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('All');
 
-    useEffect(() => {
-        fetchOrders();
-    }, []);
-
     const fetchOrders = async () => {
         try {
             const { data } = await api.get('/orders');
@@ -25,6 +21,10 @@ const OrdersPage = () => {
             setLoading(false);
         }
     };
+
+    useEffect(() => {
+        fetchOrders();
+    }, []);
 
     const handleStatusUpdate = async (id, newStatus) => {
         try {

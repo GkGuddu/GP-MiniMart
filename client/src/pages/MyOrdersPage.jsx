@@ -10,6 +10,17 @@ const MyOrdersPage = () => {
     const [loading, setLoading] = useState(true);
     const [selectedOrder, setSelectedOrder] = useState(null); // For Invoice Modal
 
+    const fetchOrders = async () => {
+        try {
+            const { data } = await api.get('/orders/myorders');
+            setOrders(data);
+            setLoading(false);
+        } catch (error) {
+            console.error('Error fetching orders', error);
+            setLoading(false);
+        }
+    };
+
     useEffect(() => {
         fetchOrders();
     }, []);
@@ -38,17 +49,6 @@ const MyOrdersPage = () => {
             };
         }
     }, [orders.length]);
-
-    const fetchOrders = async () => {
-        try {
-            const { data } = await api.get('/orders/myorders');
-            setOrders(data);
-            setLoading(false);
-        } catch (error) {
-            console.error('Error fetching orders', error);
-            setLoading(false);
-        }
-    };
 
     const handleCancelOrder = async (orderId) => {
         if (window.confirm('Are you sure you want to cancel this order?')) {

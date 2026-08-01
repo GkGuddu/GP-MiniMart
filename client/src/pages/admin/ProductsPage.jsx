@@ -10,10 +10,6 @@ const ProductsPage = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const navigate = useNavigate();
 
-    useEffect(() => {
-        fetchProducts();
-    }, []);
-
     const fetchProducts = async () => {
         try {
             const { data } = await api.get('/products');
@@ -25,6 +21,10 @@ const ProductsPage = () => {
             setLoading(false);
         }
     };
+
+    useEffect(() => {
+        fetchProducts();
+    }, []);
 
     const handleDeleteProduct = async (id) => {
         if (window.confirm('Are you sure you want to delete this product?')) {

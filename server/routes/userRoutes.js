@@ -4,6 +4,7 @@ const User = require('../models/User');
 const generateToken = require('../utils/generateToken');
 const { protect, admin } = require('../middleware/authMiddleware');
 const crypto = require('crypto');
+const sendEmail = require('../utils/sendEmail');
 
 // @desc    Auth user & get token
 // @route   POST /api/users/login
@@ -155,58 +156,122 @@ router.put('/:id/role', protect, admin, async (req, res) => {
     }
 });
 
-// @desc    Forgot Password
+// @desc    Direct Forgot Password - Reset password using email directly without OTP
 // @route   POST /api/users/forgotpassword
 // @access  Public
 router.post('/forgotpassword', async (req, res) => {
-    console.log('Forgot Password Request Body:', req.body);
-    const { email } = req.body;
+    console.log('Direct Forgot Password Request:', req.body.email);
+    const { email, password } = req.body;
+
+    if (!email) {
+        return res.status(400).json({ message: 'Please provide your registered email' });
+    }
+
     const user = await User.findOne({ email });
 
     if (!user) {
-        return res.status(404).json({ message: 'User not found' });
+        return res.status(404).json({ message: 'User not found with this email' });
     }
 
-    // Get reset token
-    const resetToken = user.getResetPasswordToken();
-
-    await user.save({ validateBeforeSave: false });
-
-    // Create reset url (simulated)
-    // In production, this would be the frontend URL
-    const frontendUrl = (process.env.FRONTEND_URL || 'https://gp-mini-mart-5qkd.vercel.app').replace(/\/$/, '');
-    const resetUrl = `${frontendUrl}/resetpassword/${resetToken}`;
-
-    const message = `You are receiving this email because you (or someone else) has requested the reset of a password. Please make a PUT request to: \n\n ${resetUrl}`;
-
-    try {
-        // MOCK EMAIL SENDING
-        console.log('====================================');
-        console.log('PASSWORD RESET LINK (SIMULATED):');
-        console.log(resetUrl);
-        console.log('====================================');
-
-        res.status(200).json({
-            success: true,
-            data: 'Email sent (check server console)',
-            resetUrl: resetUrl // Added for dev mode
-        });
-    } catch (err) {
-        console.log(err);
+    // If new password is provided, reset password directly
+    if (password) {
+        if (password.length < 6) {
+            return res.status(400).json({ message: 'Password must be at least 6 characters' });
+        }
+        
+        user.password = password;
         user.resetPasswordToken = undefined;
         user.resetPasswordExpire = undefined;
+        user.resetPasswordOtp = undefined;
+        user.resetPasswordOtpExpire = undefined;
 
-        await user.save({ validateBeforeSave: false });
+        await user.save();
 
-        return res.status(500).json({ message: 'Email could not be sent' });
+        // Send confirmation notification email
+        sendEmail({
+            to: user.email,
+            subject: 'GP MiniMart - Password Updated Successfully',
+            text: `Hello ${user.name}, your account password has been updated successfully.`,
+            html: `<div style="font-family: Arial; padding: 24px; max-width: 500px; margin: 0 auto; border: 1px solid #e5e7eb; border-radius: 12px;"><h2 style="color: #059669; text-align: center;">✅ Password Updated</h2><p>Hello <strong>${user.name}</strong>,</p><p>Your GP MiniMart account password has been reset successfully.</p></div>`,
+        }).catch(err => console.log('Notification email error:', err.message));
+
+        return res.status(200).json({
+            success: true,
+            message: 'Password reset successfully!',
+            token: generateToken(user._id),
+        });
     }
+
+    // Default confirmation response
+    res.status(200).json({
+        success: true,
+        message: 'Account verified. Enter your new password below.',
+    });
 });
 
-// @desc    Reset Password
+// @desc    Reset Password with 4-Digit OTP
+// @route   POST /api/users/resetpassword-otp
+// @access  Public
+router.post('/resetpassword-otp', async (req, res) => {
+    const { email, otp, password } = req.body;
+
+    if (!email || !otp || !password) {
+        return res.status(400).json({ message: 'Please provide email, 4-digit OTP, and new password' });
+    }
+
+    // Hash incoming OTP
+    const resetPasswordOtp = crypto
+        .createHash('sha256')
+        .update(otp.toString().trim())
+        .digest('hex');
+
+    const user = await User.findOne({
+        email,
+        resetPasswordOtp,
+        resetPasswordOtpExpire: { $gt: Date.now() },
+    });
+
+    if (!user) {
+        return res.status(400).json({ message: 'Invalid or expired 4-digit OTP' });
+    }
+
+    // Set new password
+    user.password = password;
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpire = undefined;
+    user.resetPasswordOtp = undefined;
+    user.resetPasswordOtpExpire = undefined;
+
+    await user.save();
+
+    // Send Password Changed Email Notification
+    const confirmationHtml = `
+        <div style="font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 12px; padding: 24px; background: #ffffff;">
+            <h2 style="color: #059669; text-align: center;">✅ Password Reset Successful</h2>
+            <p style="color: #374151;">Hello <strong>${user.name}</strong>,</p>
+            <p style="color: #4b5563;">Your GP MiniMart account password has been updated successfully.</p>
+            <p style="color: #6b7280; font-size: 13px;">If you did not perform this change, please contact support immediately.</p>
+        </div>
+    `;
+
+    await sendEmail({
+        to: user.email,
+        subject: 'GP MiniMart - Password Changed Successfully',
+        text: `Hello ${user.name}, your password for GP MiniMart has been changed successfully.`,
+        html: confirmationHtml,
+    });
+
+    res.status(200).json({
+        success: true,
+        message: 'Password reset successfully',
+        token: generateToken(user._id),
+    });
+});
+
+// @desc    Reset Password via Token
 // @route   PUT /api/users/resetpassword/:resetToken
 // @access  Public
 router.put('/resetpassword/:resetToken', async (req, res) => {
-    // Get hashed token
     const resetPasswordToken = crypto
         .createHash('sha256')
         .update(req.params.resetToken)
@@ -218,19 +283,20 @@ router.put('/resetpassword/:resetToken', async (req, res) => {
     });
 
     if (!user) {
-        return res.status(400).json({ message: 'Invalid token' });
+        return res.status(400).json({ message: 'Invalid or expired token' });
     }
 
-    // Set new password
     user.password = req.body.password;
     user.resetPasswordToken = undefined;
     user.resetPasswordExpire = undefined;
+    user.resetPasswordOtp = undefined;
+    user.resetPasswordOtpExpire = undefined;
 
     await user.save();
 
     res.status(200).json({
         success: true,
-        data: 'Password updated success',
+        message: 'Password updated successfully',
         token: generateToken(user._id),
     });
 });

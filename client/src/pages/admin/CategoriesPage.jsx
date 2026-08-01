@@ -16,10 +16,6 @@ const CategoriesPage = () => {
         isFeatured: false // New field
     });
 
-    useEffect(() => {
-        fetchCategories();
-    }, []);
-
     const fetchCategories = async () => {
         try {
             const { data } = await api.get('/categories');
@@ -31,6 +27,10 @@ const CategoriesPage = () => {
             setLoading(false);
         }
     };
+
+    useEffect(() => {
+        fetchCategories();
+    }, []);
 
     const handleDeleteCategory = async (id) => {
         if (window.confirm('Are you sure you want to delete this?')) {
@@ -86,15 +86,20 @@ const CategoriesPage = () => {
 
     return (
         <div className="space-y-6 animate-fade-in">
-            <div className="flex justify-between items-center">
-                <h1 className="text-2xl font-bold text-gray-900">Categories</h1>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                    <h1 className="text-2xl font-bold text-gray-900">Categories Management</h1>
+                    <p className="text-sm text-gray-500 mt-1">
+                        Viewing <span className="font-bold text-indigo-600">{categories.length}</span> Top Categories & <span className="font-bold text-purple-600">{categories.reduce((sum, c) => sum + (c.subcategories ? c.subcategories.length : 0), 0)}</span> Subcategories
+                    </p>
+                </div>
                 <button
                     onClick={() => {
                         setFormData({ name: '', image: '', parent: '', isFeatured: false });
                         setEditingId(null);
                         setShowForm(!showForm);
                     }}
-                    className="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition shadow-md"
+                    className="flex items-center justify-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition shadow-md self-start sm:self-auto"
                 >
                     {showForm ? <X size={20} className="mr-2" /> : <Plus size={20} className="mr-2" />}
                     {showForm ? 'Cancel' : 'Add Category'}

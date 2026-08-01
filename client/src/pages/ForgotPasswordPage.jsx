@@ -1,26 +1,56 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useContext } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Mail, ArrowLeft, Loader } from 'lucide-react';
+import { Mail, Lock, ArrowLeft, Loader, CheckCircle2 } from 'lucide-react';
 import api from '../utils/api';
 import toast from 'react-hot-toast';
+import AuthContext from '../context/AuthContext';
 
 const ForgotPasswordPage = () => {
+    const navigate = useNavigate();
+    const { login } = useContext(AuthContext);
+    
     const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
     const [loading, setLoading] = useState(false);
-    const [emailSent, setEmailSent] = useState(false);
-    const [resetUrl, setResetUrl] = useState('');
 
-    const handleSubmit = async (e) => {
+    // Direct Password Reset Handler (No OTP Required)
+    const handleDirectReset = async (e) => {
         e.preventDefault();
+
+        if (!email) {
+            toast.error('Please enter your registered email');
+            return;
+        }
+
+        if (password.length < 6) {
+            toast.error('Password must be at least 6 characters long');
+            return;
+        }
+
+        if (password !== confirmPassword) {
+            toast.error('Passwords do not match');
+            return;
+        }
+
         setLoading(true);
         try {
-            const response = await api.post('/users/forgotpassword', { email });
-            setResetUrl(response.data.resetUrl); // Capture the dev mode URL
-            setEmailSent(true);
-            toast.success('Reset link ready!');
+            const { data } = await api.post('/users/forgotpassword', {
+                email,
+                password
+            });
+
+            toast.success('Password reset successfully!');
+            
+            if (data.token) {
+                login(data);
+                navigate('/');
+            } else {
+                navigate('/login');
+            }
         } catch (error) {
-            toast.error(error.response?.data?.message || 'Failed to send reset link');
+            toast.error(error.response?.data?.message || 'Failed to reset password. Please check your email.');
         } finally {
             setLoading(false);
         }
@@ -35,69 +65,79 @@ const ForgotPasswordPage = () => {
                 className="max-w-md w-full space-y-8 glass p-8 rounded-2xl relative z-10"
             >
                 <div>
-                    <h2 className="mt-2 text-center text-3xl font-bold bg-gradient-to-r from-indigo-400 to-cyan-400 text-transparent bg-clip-text">
+                    <h2 className="mt-2 text-center text-3xl font-bold bg-gradient-to-r from-indigo-500 to-purple-600 text-transparent bg-clip-text">
                         Forgot Password
                     </h2>
                     <p className="mt-2 text-center text-sm text-gray-500">
-                        Enter your email to receive a reset link
+                        Enter your email and create a new password directly
                     </p>
                 </div>
 
-                {emailSent ? (
-                    <div className="text-center space-y-4">
-                        <div className="bg-green-50 text-green-700 p-4 rounded-xl border border-green-100">
-                            <p>Reset link created for <strong>{email}</strong></p>
-                            <p className="text-sm mt-2 text-gray-600">Since this is a development environment, no actual email was sent.</p>
+                <form className="mt-8 space-y-5" onSubmit={handleDirectReset}>
+                    {/* Registered Email */}
+                    <div className="relative group">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 group-focus-within:text-indigo-600 transition-colors">
+                            <Mail size={20} />
                         </div>
-
-                        {resetUrl && (
-                            <div className="pt-4 pb-2">
-                                <p className="text-xs font-bold text-indigo-600 uppercase tracking-widest mb-3">Development Mode</p>
-                                <a
-                                    href={resetUrl}
-                                    className="block w-full text-center bg-indigo-100 text-indigo-700 hover:bg-indigo-200 font-bold py-3 px-4 rounded-xl transition-colors border border-indigo-200 shadow-sm"
-                                >
-                                    Click Here to Reset Password
-                                </a>
-                            </div>
-                        )}
-
-                        <div className="pt-2">
-                            <Link to="/login" className="text-sm text-gray-500 hover:text-gray-900 underline">
-                                Back to Login
-                            </Link>
-                        </div>
+                        <input
+                            type="email"
+                            required
+                            className="w-full pl-10 pr-4 py-3 bg-white/50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all backdrop-blur-sm"
+                            placeholder="Registered Email Address"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                        />
                     </div>
-                ) : (
-                    <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-                        <div className="relative group">
-                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 group-focus-within:text-primary transition-colors">
-                                <Mail size={20} />
-                            </div>
-                            <input
-                                type="email"
-                                required
-                                className="w-full pl-10 pr-4 py-3 bg-white/50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all backdrop-blur-sm"
-                                placeholder="Email address"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                            />
-                        </div>
 
-                        <div>
-                            <button
-                                type="submit"
-                                disabled={loading}
-                                className="btn-primary flex justify-center items-center bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 border-none shadow-lg shadow-indigo-500/30"
-                            >
-                                {loading ? <Loader className="animate-spin" size={20} /> : 'Send Reset Link'}
-                            </button>
+                    {/* New Password */}
+                    <div className="relative group">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 group-focus-within:text-indigo-600 transition-colors">
+                            <Lock size={20} />
                         </div>
-                    </form>
-                )}
+                        <input
+                            type="password"
+                            required
+                            minLength={6}
+                            className="w-full pl-10 pr-4 py-3 bg-white/50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all backdrop-blur-sm"
+                            placeholder="New Password (min 6 chars)"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                        />
+                    </div>
+
+                    {/* Confirm New Password */}
+                    <div className="relative group">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 group-focus-within:text-indigo-600 transition-colors">
+                            <Lock size={20} />
+                        </div>
+                        <input
+                            type="password"
+                            required
+                            className="w-full pl-10 pr-4 py-3 bg-white/50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all backdrop-blur-sm"
+                            placeholder="Confirm New Password"
+                            value={confirmPassword}
+                            onChange={(e) => setConfirmPassword(e.target.value)}
+                        />
+                    </div>
+
+                    <div>
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className="w-full py-3.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold rounded-xl border-none shadow-lg shadow-indigo-500/30 transition-all flex justify-center items-center gap-2"
+                        >
+                            {loading ? <Loader className="animate-spin" size={20} /> : (
+                                <>
+                                    <CheckCircle2 size={18} />
+                                    Reset Password & Login
+                                </>
+                            )}
+                        </button>
+                    </div>
+                </form>
 
                 <div className="text-center mt-4">
-                    <Link to="/login" className="inline-flex items-center text-sm text-gray-600 hover:text-primary transition-colors">
+                    <Link to="/login" className="inline-flex items-center text-sm text-gray-600 hover:text-indigo-600 transition-colors">
                         <ArrowLeft size={16} className="mr-1" /> Back to Login
                     </Link>
                 </div>
