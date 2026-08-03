@@ -85,8 +85,8 @@ const CheckoutPage = () => {
             }
 
             clearCart();
-            toast.success('Order placed successfully!');
-            navigate('/myorders');
+            toast.success('🎉 Payment & Order Successful!');
+            navigate('/order-success', { state: { order: data } });
         } catch (error) {
             console.error(error);
             toast.error(error.response?.data?.message || 'Failed to place order');
