@@ -7,21 +7,36 @@ const crypto = require('crypto');
 const sendEmail = require('../utils/sendEmail');
 
 const { OAuth2Client } = require('google-auth-library');
-const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID || '443830056702-bmk5f5c214pl2tg93t8lmr3s58pve1al.apps.googleusercontent.com');
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 // @desc    Auth/Register user via Google OAuth 2.0
 // @route   POST /api/users/google
 // @access  Public
 router.post('/google', async (req, res) => {
     try {
-        const { credential, userInfo } = req.body;
+        const { credential, userInfo, code } = req.body;
         let email, name, picture;
 
-        if (credential) {
+        if (code) {
+            const oauthClient = new OAuth2Client(
+                process.env.GOOGLE_CLIENT_ID,
+                process.env.GOOGLE_CLIENT_SECRET,
+                'postmessage'
+            );
+            const { tokens } = await oauthClient.getToken(code);
+            const ticket = await oauthClient.verifyIdToken({
+                idToken: tokens.id_token,
+                audience: process.env.GOOGLE_CLIENT_ID,
+            });
+            const payload = ticket.getPayload();
+            email = payload.email;
+            name = payload.name;
+            picture = payload.picture;
+        } else if (credential) {
             // Verify Google ID Token
             const ticket = await googleClient.verifyIdToken({
                 idToken: credential,
-                audience: process.env.GOOGLE_CLIENT_ID || '443830056702-bmk5f5c214pl2tg93t8lmr3s58pve1al.apps.googleusercontent.com',
+                audience: process.env.GOOGLE_CLIENT_ID,
             });
             const payload = ticket.getPayload();
             email = payload.email;
@@ -82,15 +97,15 @@ router.get('/google/callback', async (req, res) => {
 
     try {
         const oauthClient = new OAuth2Client(
-            process.env.GOOGLE_CLIENT_ID || '443830056702-bmk5f5c214pl2tg93t8lmr3s58pve1al.apps.googleusercontent.com',
-            process.env.GOOGLE_CLIENT_SECRET || '',
+            process.env.GOOGLE_CLIENT_ID,
+            process.env.GOOGLE_CLIENT_SECRET,
             process.env.GOOGLE_CALLBACK_URL || 'http://localhost:5000/api/users/google/callback'
         );
 
         const { tokens } = await oauthClient.getToken(code);
         const ticket = await oauthClient.verifyIdToken({
             idToken: tokens.id_token,
-            audience: process.env.GOOGLE_CLIENT_ID || '443830056702-bmk5f5c214pl2tg93t8lmr3s58pve1al.apps.googleusercontent.com',
+            audience: process.env.GOOGLE_CLIENT_ID,
         });
         const payload = ticket.getPayload();
         const email = payload.email.toLowerCase();

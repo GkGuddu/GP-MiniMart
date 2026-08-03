@@ -36,32 +36,23 @@ const SlidingAuthCard = ({ initialIsSignUp = false }) => {
         setIsSignUp(initialIsSignUp);
     }, [initialIsSignUp]);
 
-    // Google OAuth Handler (Single Hook Initialization)
-    const handleGoogleSuccess = async (tokenResponse) => {
-        try {
-            toast.loading('Signing in with Google...', { id: 'google-auth' });
-            
-            let userInfo;
-            if (tokenResponse.access_token) {
-                const googleRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-                    headers: { Authorization: `Bearer ${tokenResponse.access_token}` }
-                });
-                userInfo = await googleRes.json();
-            }
-
-            const { data } = await api.post('/users/google', { userInfo });
-            
-            toast.success(`Welcome back, ${data.name}!`, { id: 'google-auth' });
-            login(data);
-            navigate(redirect);
-        } catch (error) {
-            console.error('Google Sign In Error:', error);
-            toast.error(error.response?.data?.message || 'Google Sign-In failed.', { id: 'google-auth' });
-        }
-    };
-
+    // Google OAuth Handler (Authorization Code Exchange Flow - No window.closed COOP polling)
     const triggerGoogleLogin = useGoogleLogin({
-        onSuccess: handleGoogleSuccess,
+        flow: 'auth-code',
+        onSuccess: async (codeResponse) => {
+            try {
+                toast.loading('Signing in with Google...', { id: 'google-auth' });
+
+                const { data } = await api.post('/users/google', { code: codeResponse.code });
+
+                toast.success(`Welcome back, ${data.name}!`, { id: 'google-auth' });
+                login(data);
+                navigate(redirect);
+            } catch (error) {
+                console.error('Google Sign In Error:', error);
+                toast.error(error.response?.data?.message || 'Google Sign-In failed', { id: 'google-auth' });
+            }
+        },
         onError: (err) => {
             console.error('Google OAuth Error:', err);
             toast.error('Google Sign-In popup failed or was closed');
