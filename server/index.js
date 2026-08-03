@@ -39,7 +39,9 @@ const compression = require('compression');
 app.use(express.json());
 app.use(cors());
 app.use(compression());
-app.use(require('helmet')());
+app.use(require('helmet')({
+    crossOriginOpenerPolicy: { policy: "same-origin-allow-popups" }
+}));
 
 // Database Connection
 mongoose.connect(process.env.MONGO_URI)

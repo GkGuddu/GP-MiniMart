@@ -151,13 +151,16 @@ const SlidingAuthCard = ({ initialIsSignUp = false }) => {
                         {/* Official Google One-Tap / Button Integration */}
                         <div className="flex flex-col items-center justify-center mb-4 space-y-2">
                             <div className="w-full flex justify-center">
-                                <GoogleLogin
-                                    onSuccess={handleGoogleSuccess}
-                                    onError={() => toast.error('Google Auth Failed')}
-                                    shape="circle"
-                                    size="medium"
-                                    text="signin_with"
-                                />
+                                {!isSignUp && (
+                                    <GoogleLogin
+                                        onSuccess={handleGoogleSuccess}
+                                        onError={() => toast.error('Google Auth Failed')}
+                                        shape="circle"
+                                        size="medium"
+                                        text="signin_with"
+                                        useOneTap={false}
+                                    />
+                                )}
                             </div>
 
                             {/* Social Buttons Row */}
@@ -277,13 +280,16 @@ const SlidingAuthCard = ({ initialIsSignUp = false }) => {
                         {/* Official Google One-Tap / Button Integration */}
                         <div className="flex flex-col items-center justify-center mb-3 space-y-2">
                             <div className="w-full flex justify-center">
-                                <GoogleLogin
-                                    onSuccess={handleGoogleSuccess}
-                                    onError={() => toast.error('Google Auth Failed')}
-                                    shape="circle"
-                                    size="medium"
-                                    text="signup_with"
-                                />
+                                {isSignUp && (
+                                    <GoogleLogin
+                                        onSuccess={handleGoogleSuccess}
+                                        onError={() => toast.error('Google Auth Failed')}
+                                        shape="circle"
+                                        size="medium"
+                                        text="signup_with"
+                                        useOneTap={false}
+                                    />
+                                )}
                             </div>
 
                             {/* Social Buttons Row */}
