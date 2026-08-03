@@ -6,6 +6,123 @@ const { protect, admin } = require('../middleware/authMiddleware');
 const crypto = require('crypto');
 const sendEmail = require('../utils/sendEmail');
 
+const { OAuth2Client } = require('google-auth-library');
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID || '443830056702-bmk5f5c214pl2tg93t8lmr3s58pve1al.apps.googleusercontent.com');
+
+// @desc    Auth/Register user via Google OAuth 2.0
+// @route   POST /api/users/google
+// @access  Public
+router.post('/google', async (req, res) => {
+    try {
+        const { credential, userInfo } = req.body;
+        let email, name, picture;
+
+        if (credential) {
+            // Verify Google ID Token
+            const ticket = await googleClient.verifyIdToken({
+                idToken: credential,
+                audience: process.env.GOOGLE_CLIENT_ID || '443830056702-bmk5f5c214pl2tg93t8lmr3s58pve1al.apps.googleusercontent.com',
+            });
+            const payload = ticket.getPayload();
+            email = payload.email;
+            name = payload.name;
+            picture = payload.picture;
+        } else if (userInfo) {
+            email = userInfo.email;
+            name = userInfo.name;
+            picture = userInfo.picture;
+        } else {
+            return res.status(400).json({ message: 'No Google credential provided' });
+        }
+
+        if (!email) {
+            return res.status(400).json({ message: 'Invalid Google authentication data' });
+        }
+
+        let user = await User.findOne({ email: email.toLowerCase() });
+
+        if (!user) {
+            // Create user automatically from Google Profile
+            const randomPassword = crypto.randomBytes(16).toString('hex');
+            user = await User.create({
+                name: name || email.split('@')[0],
+                email: email.toLowerCase(),
+                password: randomPassword,
+                role: email.toLowerCase() === 'gkgudd860@gmail.com' ? 'admin' : 'customer',
+            });
+        }
+
+        if (user.isBlocked) {
+            return res.status(401).json({ message: 'Your account has been blocked' });
+        }
+
+        res.json({
+            _id: user._id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            token: generateToken(user._id),
+        });
+    } catch (error) {
+        console.error('Google Auth Error:', error.message);
+        res.status(400).json({ message: 'Google authentication failed: ' + error.message });
+    }
+});
+
+// @desc    Google OAuth GET Callback endpoint
+// @route   GET /api/users/google/callback
+// @access  Public
+router.get('/google/callback', async (req, res) => {
+    const { code } = req.query;
+    const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
+
+    if (!code) {
+        return res.redirect(`${clientUrl}/login?error=No_code_provided`);
+    }
+
+    try {
+        const oauthClient = new OAuth2Client(
+            process.env.GOOGLE_CLIENT_ID || '443830056702-bmk5f5c214pl2tg93t8lmr3s58pve1al.apps.googleusercontent.com',
+            process.env.GOOGLE_CLIENT_SECRET || '',
+            process.env.GOOGLE_CALLBACK_URL || 'http://localhost:5000/api/users/google/callback'
+        );
+
+        const { tokens } = await oauthClient.getToken(code);
+        const ticket = await oauthClient.verifyIdToken({
+            idToken: tokens.id_token,
+            audience: process.env.GOOGLE_CLIENT_ID || '443830056702-bmk5f5c214pl2tg93t8lmr3s58pve1al.apps.googleusercontent.com',
+        });
+        const payload = ticket.getPayload();
+        const email = payload.email.toLowerCase();
+
+        let user = await User.findOne({ email });
+
+        if (!user) {
+            const randomPassword = crypto.randomBytes(16).toString('hex');
+            user = await User.create({
+                name: payload.name || email.split('@')[0],
+                email: email,
+                password: randomPassword,
+                role: email === 'gkgudd860@gmail.com' ? 'admin' : 'customer',
+            });
+        }
+
+        const token = generateToken(user._id);
+        const userInfo = encodeURIComponent(JSON.stringify({
+            _id: user._id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            token
+        }));
+
+        res.redirect(`${clientUrl}/login?googleAuth=${userInfo}`);
+    } catch (error) {
+        console.error('Google Callback Error:', error.message);
+        res.redirect(`${clientUrl}/login?error=Google_Auth_Failed`);
+    }
+});
+
 // @desc    Auth user & get token
 // @route   POST /api/users/login
 // @access  Public

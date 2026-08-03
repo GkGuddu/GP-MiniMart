@@ -92,17 +92,22 @@ function App() {
   );
 }
 
-// Wrapper to handle Router context if needed outside, but usually App is inside Router in main.jsx
+// Wrapper to handle Router context and Google OAuth Provider
 import { BrowserRouter } from 'react-router-dom';
+import { GoogleOAuthProvider } from '@react-oauth/google';
+
+const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || '443830056702-bmk5f5c214pl2tg93t8lmr3s58pve1al.apps.googleusercontent.com';
 
 const AppWithRouter = () => (
-  <BrowserRouter>
-    <AuthProvider>
-      <CartProvider>
-        <App />
-      </CartProvider>
-    </AuthProvider>
-  </BrowserRouter>
+  <GoogleOAuthProvider clientId={googleClientId}>
+    <BrowserRouter>
+      <AuthProvider>
+        <CartProvider>
+          <App />
+        </CartProvider>
+      </AuthProvider>
+    </BrowserRouter>
+  </GoogleOAuthProvider>
 );
 
 export default AppWithRouter;
