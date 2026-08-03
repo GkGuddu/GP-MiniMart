@@ -20,7 +20,7 @@ GP MiniMart is a full-stack e-commerce application designed for local grocery st
 
 1.  **Clone the repository:**
     ```bash
-    git clone <repository-url>
+    git clone <https://github.com/GkGuddu/GP-MiniMart>
     cd GP-MiniMart
     ```
 
