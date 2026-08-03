@@ -15,16 +15,24 @@ export const AuthProvider = ({ children }) => {
         setLoading(false);
     }, []);
 
-    const login = async (email, password) => {
+    const login = async (emailOrUserData, password) => {
         try {
-            const { data } = await api.post('/users/login', { email, password });
+            // If already an authenticated user object (from Google OAuth or direct reset)
+            if (typeof emailOrUserData === 'object' && emailOrUserData !== null && emailOrUserData.token) {
+                setUser(emailOrUserData);
+                localStorage.setItem('userInfo', JSON.stringify(emailOrUserData));
+                return { success: true };
+            }
+
+            // Normal Email + Password Login
+            const { data } = await api.post('/users/login', { email: emailOrUserData, password });
             setUser(data);
             localStorage.setItem('userInfo', JSON.stringify(data));
             return { success: true };
         } catch (error) {
             return {
                 success: false,
-                message: error.response?.data?.message || 'Login failed',
+                message: error.response?.data?.message || 'Login failed. Check your email and password.',
             };
         }
     };

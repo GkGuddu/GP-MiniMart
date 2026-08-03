@@ -2,7 +2,8 @@ import { useState, useContext, useEffect } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mail, Lock, User, Loader, ArrowLeft, Eye, EyeOff } from 'lucide-react';
-import { useGoogleLogin } from '@react-oauth/google';
+import { GoogleLogin, useGoogleLogin } from '@react-oauth/google';
+import { jwtDecode } from 'jwt-decode';
 import api from '../utils/api';
 import AuthContext from '../context/AuthContext';
 import toast from 'react-hot-toast';
@@ -35,32 +36,39 @@ const SlidingAuthCard = ({ initialIsSignUp = false }) => {
         setIsSignUp(initialIsSignUp);
     }, [initialIsSignUp]);
 
-    // Google OAuth Handler
-    const handleGoogleSuccess = async (tokenResponse) => {
+    // Google OAuth Handler (Handles both ID Tokens & Access Tokens)
+    const handleGoogleSuccess = async (credentialResponse) => {
         try {
             toast.loading('Signing in with Google...', { id: 'google-auth' });
             
-            const googleRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-                headers: { Authorization: `Bearer ${tokenResponse.access_token}` }
-            });
-            const userInfo = await googleRes.json();
+            let userInfo;
+            let credential = credentialResponse.credential;
 
-            const { data } = await api.post('/users/google', { userInfo });
+            if (credential) {
+                userInfo = jwtDecode(credential);
+            } else if (credentialResponse.access_token) {
+                const googleRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+                    headers: { Authorization: `Bearer ${credentialResponse.access_token}` }
+                });
+                userInfo = await googleRes.json();
+            }
+
+            const { data } = await api.post('/users/google', { credential, userInfo });
             
-            toast.success(`Welcome, ${data.name}!`, { id: 'google-auth' });
+            toast.success(`Welcome back, ${data.name}!`, { id: 'google-auth' });
             login(data);
             navigate(redirect);
         } catch (error) {
             console.error('Google Sign In Error:', error);
-            toast.error(error.response?.data?.message || 'Google Sign-In failed', { id: 'google-auth' });
+            toast.error(error.response?.data?.message || 'Google Sign-In failed. Check Google Cloud Console settings.', { id: 'google-auth' });
         }
     };
 
-    const triggerGoogleLogin = useGoogleLogin({
+    const triggerCustomGoogleLogin = useGoogleLogin({
         onSuccess: handleGoogleSuccess,
         onError: (err) => {
             console.error('Google OAuth Error:', err);
-            toast.error('Google Sign-In was cancelled or failed');
+            toast.error('Google Login popup failed. Make sure http://localhost:5173 is added to Google Console Origins.');
         }
     });
 
@@ -127,55 +135,69 @@ const SlidingAuthCard = ({ initialIsSignUp = false }) => {
             </div>
 
             {/* Main Auth Container Card */}
-            <div className="w-full max-w-[880px] min-h-[520px] bg-white rounded-[32px] shadow-2xl shadow-indigo-500/10 relative overflow-hidden border border-gray-100/80 flex flex-col md:flex-row">
+            <div className="w-full max-w-[880px] min-h-[540px] bg-white rounded-[32px] shadow-2xl shadow-indigo-500/10 relative overflow-hidden border border-gray-100/80 flex flex-col md:flex-row">
                 
                 {/* -------------------- SIGN IN FORM PANEL -------------------- */}
                 <div 
-                    className={`w-full md:w-1/2 min-h-[520px] p-8 md:p-12 flex flex-col justify-center items-center transition-all duration-700 ease-in-out ${
+                    className={`w-full md:w-1/2 min-h-[540px] p-8 md:p-12 flex flex-col justify-center items-center transition-all duration-700 ease-in-out ${
                         isSignUp ? 'opacity-0 pointer-events-none md:translate-x-full z-10' : 'opacity-100 z-20 md:translate-x-0'
                     }`}
                 >
                     <div className="w-full max-w-sm text-center">
-                        <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 tracking-tight mb-4">
+                        <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 tracking-tight mb-3">
                             Sign In
                         </h2>
 
-                        {/* Social Buttons - Google, FB, Insta, Twitter */}
-                        <div className="flex justify-center gap-3 mb-4">
-                            {/* Google */}
-                            <button type="button" onClick={() => triggerGoogleLogin()} title="Sign in with Google" className="w-10 h-10 rounded-xl border border-gray-200 flex items-center justify-center hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm group">
-                                <svg className="w-4 h-4 transition-transform group-hover:scale-110" viewBox="0 0 24 24">
-                                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
-                                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
-                                </svg>
-                            </button>
-                            {/* Facebook */}
-                            <button type="button" title="Facebook" className="w-10 h-10 rounded-xl border border-gray-200 flex items-center justify-center hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm group">
-                                <svg className="w-4 h-4 text-[#1877F2] transition-transform group-hover:scale-110" fill="currentColor" viewBox="0 0 24 24">
-                                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-                                </svg>
-                            </button>
-                            {/* Instagram */}
-                            <button type="button" title="Instagram" className="w-10 h-10 rounded-xl border border-gray-200 flex items-center justify-center hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm group">
-                                <svg className="w-4 h-4 text-[#E4405F] transition-transform group-hover:scale-110" fill="currentColor" viewBox="0 0 24 24">
-                                    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
-                                </svg>
-                            </button>
-                            {/* Twitter */}
-                            <button type="button" title="Twitter" className="w-10 h-10 rounded-xl border border-gray-200 flex items-center justify-center hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm group">
-                                <svg className="w-4 h-4 text-[#1DA1F2] transition-transform group-hover:scale-110" fill="currentColor" viewBox="0 0 24 24">
-                                    <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.936 9.936 0 0024 4.59z"/>
-                                </svg>
-                            </button>
+                        {/* Official Google One-Tap / Button Integration */}
+                        <div className="flex flex-col items-center justify-center mb-4 space-y-2">
+                            <div className="w-full flex justify-center">
+                                <GoogleLogin
+                                    onSuccess={handleGoogleSuccess}
+                                    onError={() => toast.error('Google Auth Failed')}
+                                    shape="circle"
+                                    size="medium"
+                                    text="signin_with"
+                                />
+                            </div>
+
+                            {/* Social Buttons Row */}
+                            <div className="flex justify-center gap-3 mt-2">
+                                <button 
+                                    type="button" 
+                                    onClick={() => triggerCustomGoogleLogin()} 
+                                    title="Sign in with Google" 
+                                    className="w-10 h-10 rounded-xl border border-gray-200 flex items-center justify-center hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm group"
+                                >
+                                    <svg className="w-4 h-4 transition-transform group-hover:scale-110" viewBox="0 0 24 24">
+                                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+                                    </svg>
+                                </button>
+                                <button type="button" title="Facebook" className="w-10 h-10 rounded-xl border border-gray-200 flex items-center justify-center hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm group">
+                                    <svg className="w-4 h-4 text-[#1877F2] transition-transform group-hover:scale-110" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                                    </svg>
+                                </button>
+                                <button type="button" title="Instagram" className="w-10 h-10 rounded-xl border border-gray-200 flex items-center justify-center hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm group">
+                                    <svg className="w-4 h-4 text-[#E4405F] transition-transform group-hover:scale-110" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                                    </svg>
+                                </button>
+                                <button type="button" title="Twitter" className="w-10 h-10 rounded-xl border border-gray-200 flex items-center justify-center hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm group">
+                                    <svg className="w-4 h-4 text-[#1DA1F2] transition-transform group-hover:scale-110" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.936 9.936 0 0024 4.59z"/>
+                                    </svg>
+                                </button>
+                            </div>
                         </div>
 
-                        <p className="text-xs text-gray-400 font-medium mb-6">
+                        <p className="text-xs text-gray-400 font-medium mb-4">
                             or use your email password
                         </p>
 
-                        <form onSubmit={handleLoginSubmit} className="space-y-4">
+                        <form onSubmit={handleLoginSubmit} className="space-y-3.5">
                             {/* Email */}
                             <div className="relative">
                                 <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
@@ -184,7 +206,7 @@ const SlidingAuthCard = ({ initialIsSignUp = false }) => {
                                 <input
                                     type="email"
                                     required
-                                    className="w-full pl-10 pr-4 py-3 bg-gray-100/70 focus:bg-white border border-transparent focus:border-indigo-500 rounded-xl text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all"
+                                    className="w-full pl-10 pr-4 py-2.5 bg-gray-100/70 focus:bg-white border border-transparent focus:border-indigo-500 rounded-xl text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all"
                                     placeholder="Email address"
                                     value={loginEmail}
                                     onChange={(e) => setLoginEmail(e.target.value)}
@@ -199,7 +221,7 @@ const SlidingAuthCard = ({ initialIsSignUp = false }) => {
                                 <input
                                     type={showLoginPassword ? 'text' : 'password'}
                                     required
-                                    className="w-full pl-10 pr-10 py-3 bg-gray-100/70 focus:bg-white border border-transparent focus:border-indigo-500 rounded-xl text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all"
+                                    className="w-full pl-10 pr-10 py-2.5 bg-gray-100/70 focus:bg-white border border-transparent focus:border-indigo-500 rounded-xl text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all"
                                     placeholder="Password"
                                     value={loginPassword}
                                     onChange={(e) => setLoginPassword(e.target.value)}
@@ -229,7 +251,7 @@ const SlidingAuthCard = ({ initialIsSignUp = false }) => {
                         </form>
 
                         {/* Mobile Switch Button */}
-                        <div className="mt-6 md:hidden text-center">
+                        <div className="mt-4 md:hidden text-center">
                             <p className="text-xs text-gray-500">Don't have an account?</p>
                             <button
                                 onClick={() => toggleMode(true)}
@@ -243,51 +265,65 @@ const SlidingAuthCard = ({ initialIsSignUp = false }) => {
 
                 {/* -------------------- SIGN UP FORM PANEL -------------------- */}
                 <div 
-                    className={`w-full md:w-1/2 min-h-[520px] p-8 md:p-12 flex flex-col justify-center items-center transition-all duration-700 ease-in-out ${
+                    className={`w-full md:w-1/2 min-h-[540px] p-8 md:p-12 flex flex-col justify-center items-center transition-all duration-700 ease-in-out ${
                         !isSignUp ? 'opacity-0 pointer-events-none md:-translate-x-full z-10' : 'opacity-100 z-20 md:translate-x-0'
                     }`}
                 >
                     <div className="w-full max-w-sm text-center">
-                        <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 tracking-tight mb-4">
+                        <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 tracking-tight mb-3">
                             Create Account
                         </h2>
 
-                        {/* Social Buttons - Google, FB, Insta, Twitter */}
-                        <div className="flex justify-center gap-3 mb-3">
-                            {/* Google */}
-                            <button type="button" onClick={() => triggerGoogleLogin()} title="Sign up with Google" className="w-10 h-10 rounded-xl border border-gray-200 flex items-center justify-center hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm group">
-                                <svg className="w-4 h-4 transition-transform group-hover:scale-110" viewBox="0 0 24 24">
-                                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
-                                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
-                                </svg>
-                            </button>
-                            {/* Facebook */}
-                            <button type="button" title="Facebook" className="w-10 h-10 rounded-xl border border-gray-200 flex items-center justify-center hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm group">
-                                <svg className="w-4 h-4 text-[#1877F2] transition-transform group-hover:scale-110" fill="currentColor" viewBox="0 0 24 24">
-                                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-                                </svg>
-                            </button>
-                            {/* Instagram */}
-                            <button type="button" title="Instagram" className="w-10 h-10 rounded-xl border border-gray-200 flex items-center justify-center hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm group">
-                                <svg className="w-4 h-4 text-[#E4405F] transition-transform group-hover:scale-110" fill="currentColor" viewBox="0 0 24 24">
-                                    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
-                                </svg>
-                            </button>
-                            {/* Twitter */}
-                            <button type="button" title="Twitter" className="w-10 h-10 rounded-xl border border-gray-200 flex items-center justify-center hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm group">
-                                <svg className="w-4 h-4 text-[#1DA1F2] transition-transform group-hover:scale-110" fill="currentColor" viewBox="0 0 24 24">
-                                    <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.936 9.936 0 0024 4.59z"/>
-                                </svg>
-                            </button>
+                        {/* Official Google One-Tap / Button Integration */}
+                        <div className="flex flex-col items-center justify-center mb-3 space-y-2">
+                            <div className="w-full flex justify-center">
+                                <GoogleLogin
+                                    onSuccess={handleGoogleSuccess}
+                                    onError={() => toast.error('Google Auth Failed')}
+                                    shape="circle"
+                                    size="medium"
+                                    text="signup_with"
+                                />
+                            </div>
+
+                            {/* Social Buttons Row */}
+                            <div className="flex justify-center gap-3 mt-1">
+                                <button 
+                                    type="button" 
+                                    onClick={() => triggerCustomGoogleLogin()} 
+                                    title="Sign up with Google" 
+                                    className="w-10 h-10 rounded-xl border border-gray-200 flex items-center justify-center hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm group"
+                                >
+                                    <svg className="w-4 h-4 transition-transform group-hover:scale-110" viewBox="0 0 24 24">
+                                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+                                    </svg>
+                                </button>
+                                <button type="button" title="Facebook" className="w-10 h-10 rounded-xl border border-gray-200 flex items-center justify-center hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm group">
+                                    <svg className="w-4 h-4 text-[#1877F2] transition-transform group-hover:scale-110" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                                    </svg>
+                                </button>
+                                <button type="button" title="Instagram" className="w-10 h-10 rounded-xl border border-gray-200 flex items-center justify-center hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm group">
+                                    <svg className="w-4 h-4 text-[#E4405F] transition-transform group-hover:scale-110" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                                    </svg>
+                                </button>
+                                <button type="button" title="Twitter" className="w-10 h-10 rounded-xl border border-gray-200 flex items-center justify-center hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm group">
+                                    <svg className="w-4 h-4 text-[#1DA1F2] transition-transform group-hover:scale-110" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.936 9.936 0 0024 4.59z"/>
+                                    </svg>
+                                </button>
+                            </div>
                         </div>
 
-                        <p className="text-xs text-gray-400 font-medium mb-4">
+                        <p className="text-xs text-gray-400 font-medium mb-3">
                             or use your email for registration
                         </p>
 
-                        <form onSubmit={handleSignupSubmit} className="space-y-3">
+                        <form onSubmit={handleSignupSubmit} className="space-y-2.5">
                             {/* Name */}
                             <div className="relative">
                                 <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
@@ -392,7 +428,7 @@ const SlidingAuthCard = ({ initialIsSignUp = false }) => {
                     }}
                     transition={{
                         duration: 0.7,
-                        ease: [0.65, 0, 0.35, 1], // Custom smooth cubic-bezier curve
+                        ease: [0.65, 0, 0.35, 1],
                     }}
                     className={`hidden md:flex absolute top-0 left-0 w-1/2 h-full z-30 bg-gradient-to-br from-indigo-700 via-purple-700 to-purple-900 text-white p-12 flex-col justify-center items-center text-center shadow-2xl transition-all duration-700 ${
                         isSignUp ? 'rounded-r-[140px]' : 'rounded-l-[140px]'
@@ -400,7 +436,6 @@ const SlidingAuthCard = ({ initialIsSignUp = false }) => {
                 >
                     <AnimatePresence mode="wait">
                         {!isSignUp ? (
-                            /* State 1: Shown when on Sign In (Overlay is on Right, offers SIGN UP) */
                             <motion.div
                                 key="hello-friend"
                                 initial={{ opacity: 0, scale: 0.9 }}
@@ -426,7 +461,6 @@ const SlidingAuthCard = ({ initialIsSignUp = false }) => {
                                 </div>
                             </motion.div>
                         ) : (
-                            /* State 2: Shown when on Sign Up (Overlay is on Left, offers SIGN IN) */
                             <motion.div
                                 key="welcome-back"
                                 initial={{ opacity: 0, scale: 0.9 }}
