@@ -25,6 +25,7 @@ const categorySchema = new mongoose.Schema({
     isFeatured: {
         type: Boolean,
         default: false,
+    }
 }, { timestamps: true });
 
 // Add indexes for ultra-fast category tree queries
