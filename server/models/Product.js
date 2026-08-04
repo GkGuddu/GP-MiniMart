@@ -81,9 +81,9 @@ const productSchema = new mongoose.Schema({
         required: true,
         default: 0,
     },
-}, { timestamps: true });
-
-// Add text index for search
+// Add indexes for ultra-fast query performance
+productSchema.index({ category: 1, isActive: 1 });
+productSchema.index({ createdAt: -1 });
 productSchema.index({ name: 'text', description: 'text', brand: 'text' });
 
 const Product = mongoose.model('Product', productSchema);

@@ -43,9 +43,14 @@ app.use(require('helmet')({
     crossOriginOpenerPolicy: { policy: "same-origin-allow-popups" }
 }));
 
-// Database Connection
-mongoose.connect(process.env.MONGO_URI)
-    .then(() => console.log('MongoDB Connected'))
+// Optimized MongoDB Connection with Connection Pooling
+mongoose.connect(process.env.MONGO_URI, {
+    maxPoolSize: 10,
+    minPoolSize: 2,
+    serverSelectionTimeoutMS: 5000,
+    socketTimeoutMS: 45000,
+})
+    .then(() => console.log('MongoDB Connected (High-Performance Pool Active)'))
     .catch((err) => console.error('MongoDB Connection Error:', err));
 
 // Routes

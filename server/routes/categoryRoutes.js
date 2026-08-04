@@ -8,14 +8,14 @@ const { protect, admin } = require('../middleware/authMiddleware');
 // @access  Public
 router.get('/', async (req, res) => {
     try {
-        // Fetch all categories
-        const allCategories = await Category.find({});
+        // Fetch all categories using fast lean objects
+        const allCategories = await Category.find({}).lean();
         const parentCategories = allCategories.filter(c => !c.parent);
 
         const hierarchicalData = parentCategories.map(parent => {
             const children = allCategories.filter(c => c.parent && c.parent.toString() === parent._id.toString());
             return {
-                ...parent._doc,
+                ...parent,
                 subcategories: children
             };
         });
