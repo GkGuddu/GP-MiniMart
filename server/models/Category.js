@@ -28,10 +28,6 @@ const categorySchema = new mongoose.Schema({
     }
 }, { timestamps: true });
 
-// Add indexes for ultra-fast category tree queries
-categorySchema.index({ parent: 1, isActive: 1 });
-categorySchema.index({ isFeatured: 1 });
-
 const Category = mongoose.model('Category', categorySchema);
 
 module.exports = Category;
