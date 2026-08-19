@@ -4,7 +4,7 @@ const settingsSchema = new mongoose.Schema({
     storeName: {
         type: String,
         required: true,
-        default: 'GP MiniMart'
+        default: 'SwiftCart'
     },
     email: {
         type: String,

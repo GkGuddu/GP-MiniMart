@@ -18,7 +18,7 @@ router.post('/chat', async (req, res) => {
     try {
         // Fetch store settings & catalog from database
         const settings = await Settings.findOne() || {
-            storeName: 'GP MiniMart',
+            storeName: 'SwiftCart',
             email: 'support@gpminimart.com',
             contactNumber: '+91 98765 43210',
             address: 'Local Market, India',
@@ -39,7 +39,7 @@ router.post('/chat', async (req, res) => {
                 `- ${p.name} (${p.unit}): Price ${settings.currency}${p.price} (MRP: ${settings.currency}${p.mrp}), Stock: ${p.stock} units`
             ).join('\n');
 
-            const systemInstruction = `You are the GP MiniMart virtual shopping assistant.
+            const systemInstruction = `You are the SwiftCart virtual shopping assistant.
 Here is the store context and products catalog from the database:
 Store Name: ${settings.storeName}
 Email: ${settings.email}

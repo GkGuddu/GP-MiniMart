@@ -10,7 +10,7 @@ export const generateInvoicePDF = (order) => {
             format: 'a4'
         });
 
-        const invoiceNo = order.invoiceNumber || `GPM-INV-${new Date(order.createdAt || Date.now()).getFullYear()}-${order._id.slice(-6).toUpperCase()}`;
+        const invoiceNo = order.invoiceNumber || `SWIFT-INV-${new Date(order.createdAt || Date.now()).getFullYear()}-${order._id.slice(-6).toUpperCase()}`;
         const orderDate = new Date(order.createdAt || Date.now()).toLocaleDateString('en-IN', {
             day: '2-digit',
             month: 'short',
@@ -26,7 +26,7 @@ export const generateInvoicePDF = (order) => {
         doc.setTextColor(255, 255, 255);
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(20);
-        doc.text('GP MINIMART', 14, 16);
+        doc.text('SWIFTCART', 14, 16);
 
         doc.setFontSize(10);
         doc.setFont('helvetica', 'normal');
@@ -47,7 +47,7 @@ export const generateInvoicePDF = (order) => {
         doc.setFont('helvetica', 'bold');
         doc.text('STORE ADDRESS:', 14, y);
         doc.setFont('helvetica', 'normal');
-        doc.text('GP MiniMart Supermarket Main Road, Kirana Bazaar\nCity Centre, India - 400001\nSupport: support@gpminimart.com | +91 9876543210', 14, y + 5);
+        doc.text('SwiftCart Supermarket Main Road, Kirana Bazaar\nCity Centre, India - 400001\nSupport: support@swiftcart.com | +91 9876543210', 14, y + 5);
 
         doc.setFont('helvetica', 'bold');
         doc.text('INVOICE DETAILS:', 120, y);
@@ -171,11 +171,11 @@ export const generateInvoicePDF = (order) => {
             doc.setTextColor(148, 163, 184);
             doc.setFontSize(8);
             doc.setFont('helvetica', 'normal');
-            doc.text('Thank you for shopping with GP MiniMart! For returns & support, contact support@gpminimart.com', 14, 286);
+            doc.text('Thank you for shopping with SwiftCart! For returns & support, contact support@swiftcart.com', 14, 286);
             doc.text(`Page ${i} of ${pageCount}`, 196, 286, { align: 'right' });
         }
 
-        doc.save(`GP-MiniMart-Invoice-${invoiceNo}.pdf`);
+        doc.save(`SwiftCart-Invoice-${invoiceNo}.pdf`);
         toast.success('Invoice PDF downloaded successfully!');
     } catch (error) {
         console.error('Error generating invoice PDF:', error);

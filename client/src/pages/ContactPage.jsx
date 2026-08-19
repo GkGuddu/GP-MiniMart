@@ -35,7 +35,7 @@ const ContactPage = () => {
                                 </div>
                                 <div>
                                     <h3 className="font-bold text-gray-900">Store Address</h3>
-                                    <p className="text-gray-600 mt-1">Indrapuri, GP MiniMart,<br />Bhopal, India 462022</p>
+                                    <p className="text-gray-600 mt-1">Indrapuri, SwiftCart,<br />Bhopal, India 462022</p>
                                 </div>
                             </div>
 

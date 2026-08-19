@@ -1,6 +1,6 @@
-# GP MiniMart
+# SwiftCart
 
-GP MiniMart is a full-stack e-commerce application designed for local grocery stores (Kirana shops). It features a modern, responsive UI for customers and a comprehensive admin panel for shop owners.
+SwiftCart is a full-stack e-commerce application designed for local grocery stores (Kirana shops). It features a modern, responsive UI for customers and a comprehensive admin panel for shop owners.
 
 ## Tech Stack
 

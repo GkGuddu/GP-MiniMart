@@ -51,9 +51,9 @@ const Navbar = () => {
                     {/* Brand Logo */}
                     <div className="flex items-center">
                         <Link to="/" className="flex-shrink-0 flex items-center group mr-8">
-                            <img src="/logo.png" alt="GP MiniMart" className="h-10 w-auto mr-2.5 group-hover:scale-105 transition-transform drop-shadow-sm" />
+                            <img src="/logo.png" alt="SwiftCart" className="h-10 w-auto mr-2.5 group-hover:scale-105 transition-transform drop-shadow-sm" />
                             <span className="text-2xl font-black bg-gradient-to-r from-indigo-700 via-purple-700 to-indigo-600 text-transparent bg-clip-text tracking-tight">
-                                GP MiniMart
+                                SwiftCart
                             </span>
                         </Link>
 

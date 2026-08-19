@@ -59,7 +59,7 @@ const sendEmail = async ({ to, subject, html, text }) => {
         const transporter = await getTransporter();
 
         const mailOptions = {
-            from: `"${process.env.STORE_NAME || 'GP MiniMart'}" <${process.env.EMAIL_FROM || process.env.EMAIL_USER || 'noreply@gpminimart.com'}>`,
+            from: `"${process.env.STORE_NAME || 'SwiftCart'}" <${process.env.EMAIL_FROM || process.env.EMAIL_USER || 'noreply@swiftcart.com'}>`,
             to,
             subject,
             text,
