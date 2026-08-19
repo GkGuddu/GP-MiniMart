@@ -37,12 +37,7 @@ const Footer = () => {
     const currentYear = new Date().getFullYear();
 
     return (
-        <footer className="relative bg-slate-950 text-white pt-24 pb-12 overflow-hidden border-t border-white/5">
-            {/* Background elements - Static Premium Overlay */}
-            <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0 pointer-events-none">
-                <div className="absolute -top-24 -left-24 w-96 h-96 bg-indigo-600/10 rounded-full blur-[100px]"></div>
-                <div className="absolute top-1/2 right-0 w-64 h-64 bg-sky-600/10 rounded-full blur-[80px]"></div>
-            </div>
+        <footer className="relative bg-slate-950 text-white pt-20 pb-12 overflow-hidden border-t border-white/5">
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
                 {/* Newsletter Section - Now prominent */}

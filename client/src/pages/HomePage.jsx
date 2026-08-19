@@ -76,18 +76,6 @@ const HomePage = () => {
                     '-=0.4'
                 );
             }
-
-            // Floating animation for floating graphics (if element exists)
-            const floatElements = mainRef.current.querySelectorAll('.gsap-float');
-            if (floatElements.length > 0) {
-                gsap.to(floatElements, {
-                    y: -12,
-                    duration: 2.5,
-                    repeat: -1,
-                    yoyo: true,
-                    ease: 'sine.inOut'
-                });
-            }
         }, mainRef);
 
         return () => ctx.revert();

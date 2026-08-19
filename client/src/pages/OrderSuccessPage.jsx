@@ -30,38 +30,6 @@ const OrderSuccessPage = () => {
 
     return (
         <div className="min-h-[85vh] flex items-center justify-center px-4 py-12 bg-gradient-to-br from-emerald-50/60 via-indigo-50/40 to-purple-50/50 relative overflow-hidden">
-            
-            {/* Background Decorative Particles */}
-            <div className="absolute inset-0 pointer-events-none overflow-hidden">
-                {[...Array(12)].map((_, i) => (
-                    <motion.div
-                        key={i}
-                        initial={{
-                            x: Math.random() * 800 - 400,
-                            y: Math.random() * 600 - 300,
-                            scale: 0.5,
-                            opacity: 0.8
-                        }}
-                        animate={{
-                            y: [0, -30, 0],
-                            rotate: [0, 180, 360],
-                            scale: [0.6, 1, 0.6]
-                        }}
-                        transition={{
-                            duration: 3 + Math.random() * 2,
-                            repeat: Infinity,
-                            ease: 'easeInOut'
-                        }}
-                        className={`absolute w-3 h-3 rounded-full ${
-                            i % 4 === 0 ? 'bg-emerald-400' : i % 4 === 1 ? 'bg-indigo-400' : i % 4 === 2 ? 'bg-purple-400' : 'bg-amber-400'
-                        }`}
-                        style={{
-                            top: `${15 + (i * 7)}%`,
-                            left: `${10 + (i * 8)}%`
-                        }}
-                    />
-                ))}
-            </div>
 
             <div ref={cardRef} className="w-full max-w-xl bg-white/90 backdrop-blur-xl rounded-[32px] shadow-2xl p-8 sm:p-12 text-center border border-white/80 relative z-10">
                 

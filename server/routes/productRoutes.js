@@ -3,12 +3,94 @@ const router = express.Router();
 const Product = require('../models/Product');
 const { protect, admin } = require('../middleware/authMiddleware');
 
-// @desc    Fetch all products
+// @desc    Fetch products with pagination, filtering & lean projection
 // @route   GET /api/products
 // @access  Public
 router.get('/', async (req, res) => {
-    const products = await Product.find({});
-    res.json(products);
+    try {
+        const page = Math.max(1, parseInt(req.query.pageNumber || req.query.page || 1));
+        const limit = Math.max(1, Math.min(100, parseInt(req.query.limit || 20)));
+        const skip = (page - 1) * limit;
+
+        const { category, search, sortBy, priceRange, all } = req.query;
+
+        // If 'all=true' is requested (for legacy admin queries or complete listings)
+        if (all === 'true') {
+            const products = await Product.find({})
+                .select('name price mrp image category subcategory stock unit rating numReviews isFeatured isActive brand createdAt description')
+                .lean();
+            return res.json(products);
+        }
+
+        const query = { isActive: { $ne: false } };
+
+        // Category Filter
+        if (category && category !== 'All' && category !== 'all') {
+            if (category.match(/^[0-9a-fA-F]{24}$/)) {
+                query.category = category;
+            } else {
+                query.category = category;
+            }
+        }
+
+        // Search Filter
+        if (search && search.trim()) {
+            const regex = new RegExp(search.trim(), 'i');
+            query.$or = [
+                { name: regex },
+                { description: regex },
+                { brand: regex }
+            ];
+        }
+
+        // Price Range Filter
+        if (priceRange && priceRange !== 'all') {
+            if (priceRange === '200+') {
+                query.price = { $gte: 200 };
+            } else {
+                const [min, max] = priceRange.split('-').map(Number);
+                if (!isNaN(min) && !isNaN(max)) {
+                    query.price = { $gte: min, $lte: max };
+                }
+            }
+        }
+
+        // Sort Options
+        let sort = { createdAt: -1 };
+        if (sortBy === 'low-high') {
+            sort = { price: 1 };
+        } else if (sortBy === 'high-low') {
+            sort = { price: -1 };
+        }
+
+        const [products, total] = await Promise.all([
+            Product.find(query)
+                .select('name price mrp image category subcategory stock unit rating numReviews isFeatured isActive brand createdAt description')
+                .sort(sort)
+                .skip(skip)
+                .limit(limit)
+                .lean(),
+            Product.countDocuments(query)
+        ]);
+
+        const pages = Math.ceil(total / limit) || 1;
+
+        // Return array for backwards compatibility if no pagination params were provided
+        if (!req.query.page && !req.query.pageNumber && !req.query.limit && !req.query.category && !req.query.search && !req.query.priceRange && !req.query.sortBy) {
+            return res.json(products);
+        }
+
+        res.json({
+            products,
+            page,
+            pages,
+            total,
+            hasMore: page < pages
+        });
+    } catch (error) {
+        console.error('Error fetching products:', error);
+        res.status(500).json({ message: 'Server error fetching products' });
+    }
 });
 
 // @desc    Fetch single product
@@ -16,7 +98,7 @@ router.get('/', async (req, res) => {
 // @access  Public
 router.get('/:id', async (req, res) => {
     try {
-        const product = await Product.findById(req.params.id);
+        const product = await Product.findById(req.params.id).lean();
         if (product) {
             res.json(product);
         } else {
