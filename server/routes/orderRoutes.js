@@ -151,18 +151,7 @@ router.get('/:id', protect, async (req, res) => {
 // @route   PUT /api/orders/:id/pay
 // @access  Private
 router.put('/:id/pay', protect, async (req, res) => {
-    const order = await Order.findById(req.params.id);
-
-    if (order) {
-        order.isPaid = true;
-        order.paidAt = Date.now();
-        order.paymentMethod = req.body.paymentMethod || order.paymentMethod;
-
-        const updatedOrder = await order.save();
-        res.json(updatedOrder);
-    } else {
-        res.status(404).json({ message: 'Order not found' });
-    }
+    return res.status(400).json({ message: 'Direct payment marking disabled. Use verified payment gateways.' });
 });
 
 // @desc    Update order to delivered

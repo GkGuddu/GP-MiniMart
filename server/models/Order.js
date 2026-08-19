@@ -70,6 +70,18 @@ const orderSchema = new mongoose.Schema({
     refundAmount: {
         type: Number,
         default: 0,
+    },
+    razorpayOrderId: {
+        type: String,
+    },
+    razorpayPaymentId: {
+        type: String,
+    },
+    paymentResult: {
+        id: { type: String },
+        status: { type: String },
+        update_time: { type: String },
+        email_address: { type: String },
     }
 }, { timestamps: true });
 

@@ -4,7 +4,7 @@ import CartContext from '../context/CartContext';
 import AuthContext from '../context/AuthContext';
 import api from '../utils/api';
 import toast from 'react-hot-toast';
-import { MapPin, CreditCard, CheckCircle, ArrowRight, ArrowLeft, QrCode, Smartphone, X } from 'lucide-react';
+import { MapPin, CreditCard, CheckCircle, ArrowRight, ArrowLeft, QrCode, Smartphone, X, ShieldCheck } from 'lucide-react';
 
 const CheckoutPage = () => {
     const { cartItems, clearCart } = useContext(CartContext);
@@ -53,27 +53,114 @@ const CheckoutPage = () => {
         }
     };
 
-    const handlePlaceOrder = () => {
-        const finalPrice = promoApplied ? totalPrice - discountDetails.amount : totalPrice;
-        submitOrder(finalPrice);
+    const loadRazorpayScript = () => {
+        return new Promise((resolve) => {
+            if (window.Razorpay) {
+                return resolve(true);
+            }
+            const script = document.createElement('script');
+            script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+            script.onload = () => resolve(true);
+            script.onerror = () => resolve(false);
+            document.body.appendChild(script);
+        });
     };
 
-    const submitOrder = async (finalPrice) => {
+    const handleRazorpayPayment = async (orderData, finalPrice) => {
         setLoading(true);
         try {
-            const orderData = {
-                orderItems: cartItems.map(item => ({
-                    product: item._id,
-                    name: item.name,
-                    image: item.image,
-                    price: item.price,
-                    qty: item.qty
-                })),
-                shippingAddress: address,
-                paymentMethod,
-                totalPrice: finalPrice
+            const isLoaded = await loadRazorpayScript();
+            if (!isLoaded) {
+                toast.error('Razorpay SDK failed to load');
+                setLoading(false);
+                return;
+            }
+
+            const { data: createdOrder } = await api.post('/orders', orderData);
+
+            const { data: rzpOrder } = await api.post('/payment/razorpay/create-order', {
+                amount: finalPrice,
+                orderId: createdOrder._id,
+            });
+
+            const options = {
+                key: import.meta.env.VITE_RAZORPAY_KEY_ID || rzpOrder.key,
+                amount: rzpOrder.amount,
+                currency: rzpOrder.currency,
+                name: 'GP MiniMart',
+                description: 'Grocery Order Payment',
+                order_id: rzpOrder.id,
+                handler: async (response) => {
+                    try {
+                        const { data: verifyData } = await api.post('/payment/razorpay/verify', {
+                            razorpay_order_id: response.razorpay_order_id,
+                            razorpay_payment_id: response.razorpay_payment_id,
+                            razorpay_signature: response.razorpay_signature,
+                            orderId: createdOrder._id,
+                        });
+
+                        clearCart();
+                        toast.success('🎉 Razorpay Payment & Order Successful!');
+                        navigate('/order-success', { state: { order: verifyData.order || createdOrder } });
+                    } catch (verifyErr) {
+                        toast.error(verifyErr.response?.data?.message || 'Payment verification failed');
+                    }
+                },
+                modal: {
+                    ondismiss: () => {
+                        toast.error('Payment cancelled by user');
+                        setLoading(false);
+                    }
+                },
+                prefill: {
+                    name: address.fullName,
+                    email: user?.email || '',
+                    contact: address.mobileNumber,
+                },
+                theme: {
+                    color: '#4f46e5',
+                },
             };
 
+            const paymentObject = new window.Razorpay(options);
+            paymentObject.on('payment.failed', (response) => {
+                toast.error(response.error.description || 'Payment Failed');
+                setLoading(false);
+            });
+            paymentObject.open();
+        } catch (error) {
+            console.error(error);
+            toast.error(error.response?.data?.message || 'Razorpay initialization failed');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handlePlaceOrder = () => {
+        const finalPrice = promoApplied ? totalPrice - discountDetails.amount : totalPrice;
+        const orderData = {
+            orderItems: cartItems.map(item => ({
+                product: item._id,
+                name: item.name,
+                image: item.image,
+                price: item.price,
+                qty: item.qty
+            })),
+            shippingAddress: address,
+            paymentMethod,
+            totalPrice: finalPrice
+        };
+
+        if (paymentMethod === 'Razorpay Online') {
+            handleRazorpayPayment(orderData, finalPrice);
+        } else {
+            submitOrder(orderData, finalPrice);
+        }
+    };
+
+    const submitOrder = async (orderData, finalPrice) => {
+        setLoading(true);
+        try {
             const { data } = await api.post('/orders', orderData);
 
             if (paymentMethod === 'UPI / QR Code') {
@@ -112,7 +199,6 @@ const CheckoutPage = () => {
 
     return (
         <div className="max-w-4xl mx-auto px-4 py-10">
-            {/* Steps Indicator */}
             <div className="flex justify-center items-center mb-12">
                 <div className={`flex items-center ${step >= 1 ? 'text-indigo-600' : 'text-gray-400'}`}>
                     <div className={`w-10 h-10 rounded-full border-2 flex items-center justify-center font-bold ${step >= 1 ? 'border-indigo-600 bg-indigo-50 text-indigo-600' : 'border-gray-300'}`}>1</div>
@@ -131,7 +217,6 @@ const CheckoutPage = () => {
             </div>
 
             <div className="bg-white rounded-3xl shadow-xl p-6 sm:p-10 border border-gray-100">
-                {/* Step 1: Address */}
                 {step === 1 && (
                     <div className="space-y-6">
                         <h2 className="text-2xl font-black text-gray-900 flex items-center">
@@ -210,7 +295,6 @@ const CheckoutPage = () => {
                     </div>
                 )}
 
-                {/* Step 2: Payment */}
                 {step === 2 && (
                     <div className="space-y-6">
                         <h2 className="text-2xl font-black text-gray-900 flex items-center">
@@ -218,7 +302,6 @@ const CheckoutPage = () => {
                         </h2>
                         
                         <div className="space-y-4">
-                            {/* UPI / QR Code Payment Option */}
                             <label className={`flex items-start p-5 border-2 rounded-2xl cursor-pointer transition-all ${paymentMethod === 'UPI / QR Code' ? 'border-indigo-600 bg-indigo-50/50 shadow-sm' : 'border-gray-200 hover:border-gray-300'}`}>
                                 <input
                                     type="radio"
@@ -239,7 +322,26 @@ const CheckoutPage = () => {
                                 </div>
                             </label>
 
-                            {/* Cash on Delivery Option */}
+                            <label className={`flex items-start p-5 border-2 rounded-2xl cursor-pointer transition-all ${paymentMethod === 'Razorpay Online' ? 'border-indigo-600 bg-indigo-50/50 shadow-sm' : 'border-gray-200 hover:border-gray-300'}`}>
+                                <input
+                                    type="radio"
+                                    name="payment"
+                                    value="Razorpay Online"
+                                    checked={paymentMethod === 'Razorpay Online'}
+                                    onChange={(e) => setPaymentMethod(e.target.value)}
+                                    className="h-5 w-5 text-indigo-600 mt-1 focus:ring-indigo-500"
+                                />
+                                <div className="ml-3.5 flex-1">
+                                    <div className="flex items-center justify-between">
+                                        <span className="font-bold text-lg text-gray-900 flex items-center">
+                                            <ShieldCheck size={20} className="mr-2 text-indigo-600" /> Razorpay Online Gateway
+                                        </span>
+                                        <span className="bg-emerald-100 text-emerald-700 text-xs font-black uppercase px-2.5 py-1 rounded-full">Cards/Netbanking/UPI</span>
+                                    </div>
+                                    <p className="text-xs text-gray-500 mt-1">Secure payment using Cards, NetBanking, Wallets, and UPI Gateway.</p>
+                                </div>
+                            </label>
+
                             <label className={`flex items-start p-5 border-2 rounded-2xl cursor-pointer transition-all ${paymentMethod === 'Cash on Delivery' ? 'border-indigo-600 bg-indigo-50/50 shadow-sm' : 'border-gray-200 hover:border-gray-300'}`}>
                                 <input
                                     type="radio"
@@ -273,7 +375,6 @@ const CheckoutPage = () => {
                     </div>
                 )}
 
-                {/* Step 3: Review Order */}
                 {step === 3 && (
                     <div className="space-y-6">
                         <h2 className="text-2xl font-black text-gray-900 flex items-center">
@@ -349,6 +450,14 @@ const CheckoutPage = () => {
                                 >
                                     <QrCode size={18} className="mr-2" /> Pay via UPI QR Code <ArrowRight className="ml-2" size={18} />
                                 </button>
+                            ) : paymentMethod === 'Razorpay Online' ? (
+                                <button
+                                    onClick={handlePlaceOrder}
+                                    disabled={loading}
+                                    className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3.5 rounded-xl font-bold transition-all flex items-center shadow-lg shadow-indigo-500/25 disabled:opacity-50"
+                                >
+                                    {loading ? 'Initializing Razorpay...' : 'Pay with Razorpay'} <ArrowRight className="ml-2" size={18} />
+                                </button>
                             ) : (
                                 <button
                                     onClick={handlePlaceOrder}
@@ -363,12 +472,9 @@ const CheckoutPage = () => {
                 )}
             </div>
 
-            {/* UPI QR Code Payment Modal */}
             {showQRModal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
                     <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200 border border-gray-100">
-                        
-                        {/* Header */}
                         <div className="p-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/80">
                             <div className="flex items-center space-x-2">
                                 <QrCode className="text-indigo-600" size={22} />
@@ -379,7 +485,6 @@ const CheckoutPage = () => {
                             </button>
                         </div>
 
-                        {/* QR Code Container */}
                         <div className="p-8 flex flex-col items-center text-center">
                             <div className="bg-white p-4 rounded-2xl border-2 border-indigo-500 shadow-md mb-4 relative group">
                                 <img
@@ -401,7 +506,6 @@ const CheckoutPage = () => {
                                 <span className="text-2xl font-black text-indigo-700">₹{finalAmount}</span>
                             </div>
 
-                            {/* Clean Confirm Button */}
                             <button
                                 onClick={handlePlaceOrder}
                                 disabled={loading}

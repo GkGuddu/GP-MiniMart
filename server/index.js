@@ -50,6 +50,7 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/coupons', couponRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/upload', uploadRoutes);
+app.use('/api/payment', require('./routes/paymentRoutes'));
 app.use('/api/settings', require('./routes/settingsRoutes'));
 app.use('/api/ai', require('./routes/aiRoutes'));
 
