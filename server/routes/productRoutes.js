@@ -21,7 +21,18 @@ router.get('/', async (req, res) => {
         const query = { isActive: { $ne: false } };
 
         if (category && category !== 'All' && category !== 'all') {
-            query.category = category;
+            const mongoose = require('mongoose');
+            if (mongoose.Types.ObjectId.isValid(category)) {
+                query.category = category;
+            } else {
+                const Category = require('../models/Category');
+                const foundCategory = await Category.findOne({ name: { $regex: new RegExp(`^${category}$`, 'i') } });
+                if (foundCategory) {
+                    query.category = foundCategory._id;
+                } else {
+                    query.category = new mongoose.Types.ObjectId();
+                }
+            }
         }
 
         if (search && search.trim()) {

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Facebook, Twitter, Instagram, Mail, Phone, MapPin } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../utils/api';
+import { fetchWithCache } from '../utils/queryCache';
 
 const Footer = () => {
     const [topCategories, setTopCategories] = useState([]);
@@ -12,8 +13,11 @@ const Footer = () => {
         const fetchData = async () => {
             try {
                 // Fetch Categories
-                const { data: categoriesData } = await api.get('/categories');
-                const featured = categoriesData
+                const categoriesData = await fetchWithCache('categories_list', async () => {
+                    const res = await api.get('/categories');
+                    return res.data;
+                });
+                const featured = (categoriesData || [])
                     .flatMap(cat => [cat, ...(cat.subcategories || [])]) // Flatten to include subcategories if needed, or just top level
                     .filter(cat => cat.isFeatured)
                     .slice(0, 5); // Limit to 5

@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { fetchWithCache } from '../utils/queryCache';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -15,8 +16,10 @@ export const getProducts = async () => {
 };
 
 export const getCategories = async () => {
-    const response = await api.get('/categories');
-    return response.data;
+    return fetchWithCache('categories_list', async () => {
+        const response = await api.get('/categories');
+        return response.data;
+    });
 };
 
 export default api;

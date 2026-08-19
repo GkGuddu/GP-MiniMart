@@ -7,9 +7,13 @@ import SkeletonCard from '../components/SkeletonCard';
 import { fetchWithCache } from '../utils/queryCache';
 import { ChevronLeft, ChevronRight, Search, Filter } from 'lucide-react';
 
+const ALL_CATEGORY = { name: 'All', icon: '🛍️', _id: 'all' };
+const SEARCH_CATEGORY = { name: 'Search Results', icon: '🔍' };
+
 const ShopPage = () => {
     const [products, setProducts] = useState([]);
     const [categories, setCategories] = useState([]);
+    const [categoriesLoaded, setCategoriesLoaded] = useState(false);
     const [loading, setLoading] = useState(true);
     
     // Pagination state
@@ -20,7 +24,6 @@ const ShopPage = () => {
     const location = useLocation();
     const navigate = useNavigate();
 
-    const [selectedCategory, setSelectedCategory] = useState({ name: 'All', icon: '🛍️', _id: 'all' });
     const [priceRange, setPriceRange] = useState('all');
     const [sortBy, setSortBy] = useState('default');
 
@@ -52,30 +55,38 @@ const ShopPage = () => {
                     icon: '📦',
                 }));
 
-                setCategories([{ name: 'All', icon: '🛍️', _id: 'all' }, ...fetchedCats]);
+                setCategories([ALL_CATEGORY, ...fetchedCats]);
             } catch (error) {
                 console.error('Error fetching categories:', error);
+            } finally {
+                if (isMounted) setCategoriesLoaded(true);
             }
         };
         loadCategories();
         return () => { isMounted = false; };
     }, []);
 
-    // Set selected category based on URL
-    useEffect(() => {
+    // Derive selected category from URL params and loaded categories
+    const selectedCategory = useMemo(() => {
         if (urlCategory) {
-            const foundCat = categories.find(c => c.name === urlCategory || c.name.includes(urlCategory));
-            if (foundCat) setSelectedCategory(foundCat);
-            else setSelectedCategory({ name: urlCategory, icon: '🔍' });
-        } else if (urlSearch) {
-            setSelectedCategory({ name: 'Search Results', icon: '🔍' });
-        } else {
-            setSelectedCategory({ name: 'All', icon: '🛍️', _id: 'all' });
+            const foundCat = categories.find(c => c.name === urlCategory || c.name.toLowerCase().includes(urlCategory.toLowerCase()));
+            return foundCat || { name: urlCategory, icon: '🔍' };
         }
+        if (urlSearch) {
+            return SEARCH_CATEGORY;
+        }
+        return ALL_CATEGORY;
     }, [urlCategory, urlSearch, categories]);
 
     // Fetch products with server-side pagination, caching, and deduplication
     useEffect(() => {
+        // If there is a category in the URL but categories are not loaded yet, wait.
+        // This avoids fetching by the temporary/incorrect category name parameter
+        // before resolving to the correct category ObjectId.
+        if (urlCategory && !categoriesLoaded) {
+            return;
+        }
+
         let isMounted = true;
         setLoading(true);
 
@@ -129,7 +140,7 @@ const ShopPage = () => {
         loadProducts();
 
         return () => { isMounted = false; };
-    }, [page, selectedCategory, urlSearch, priceRange, sortBy]);
+    }, [page, selectedCategory, urlSearch, priceRange, sortBy, categoriesLoaded, urlCategory]);
 
     // Handlers
     const handleCategoryClick = useCallback((catName) => {
