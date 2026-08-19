@@ -37,7 +37,7 @@ const ProductCard = memo(({ product }) => {
     return (
         <div
             onClick={handleCardClick}
-            className="group relative bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden cursor-pointer transition-all duration-300 hover:shadow-xl hover:shadow-indigo-100/50 hover:-translate-y-1 flex flex-col justify-between h-[330px]"
+            className="group relative bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden cursor-pointer transition-all duration-300 hover:shadow-xl hover:shadow-indigo-100/50 hover:-translate-y-1 flex flex-col justify-between h-82.5"
         >
             <div className="relative h-40 w-full bg-slate-50 flex items-center justify-center p-3">
                 {product.image ? (
