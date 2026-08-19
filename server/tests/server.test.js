@@ -9,13 +9,13 @@ app.use(cors());
 app.use(helmet());
 
 app.get('/', (req, res) => {
-    res.send('Kirana Shop API is running...');
+    res.send('GP MiniMart API is running...');
 });
 
 describe('Server Basic Tests', () => {
     it('should return 200 OK for the root route', async () => {
         const res = await request(app).get('/');
         expect(res.statusCode).toEqual(200);
-        expect(res.text).toBe('Kirana Shop API is running...');
+        expect(res.text).toBe('GP MiniMart API is running...');
     });
 });

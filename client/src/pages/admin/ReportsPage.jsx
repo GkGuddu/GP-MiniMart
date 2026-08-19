@@ -346,13 +346,13 @@ const ReportsPage = () => {
                             doc.setTextColor(107, 25, 106); // Purple fallback
                             doc.setFontSize(36);
                             doc.setFont("helvetica", "bold");
-                            doc.text("SWIFTCART", 105, 150, { align: "center" });
+                            doc.text("GP MINIMART", 105, 150, { align: "center" });
                         }
                     } else {
                         doc.setTextColor(107, 25, 106); // Purple fallback
                         doc.setFontSize(36);
                         doc.setFont("helvetica", "bold");
-                        doc.text("SWIFTCART", 105, 150, { align: "center" });
+                        doc.text("GP MINIMART", 105, 150, { align: "center" });
                     }
                     
                     doc.restoreGraphicsState();
@@ -368,10 +368,10 @@ const ReportsPage = () => {
                     
                     doc.setFontSize(44);
                     doc.setFont("helvetica", "bold");
-                    doc.text("SC", 105, 146, { align: "center" });
+                    doc.text("GP", 105, 146, { align: "center" });
                     
                     doc.setFontSize(11);
-                    doc.text("SWIFTCART", 105, 158, { align: "center" });
+                    doc.text("MINIMART", 105, 158, { align: "center" });
                 }
                 
                 // 2. Draw Page Border Frame
@@ -388,7 +388,7 @@ const ReportsPage = () => {
             }
 
             // Save PDF
-            doc.save(`SwiftCart-Sales-Report-${timeFrame}.pdf`);
+            doc.save(`GP-MiniMart-Sales-Report-${timeFrame}.pdf`);
             toast.success("PDF Report downloaded successfully");
         } catch (err) {
             console.error("Failed to generate PDF", err);

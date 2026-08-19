@@ -56,12 +56,12 @@ const WelcomePage = () => {
             <div className="relative text-center z-10 p-8 flex flex-col items-center max-w-xl">
                 {/* Logo Badge */}
                 <div className="gsap-welcome-logo mb-6 flex items-center justify-center h-28 w-28 bg-white/10 rounded-3xl backdrop-blur-xl border border-white/20 shadow-[0_0_50px_rgba(79,70,229,0.3)]">
-                    <img src="/logo.png" alt="SwiftCart Logo" className="h-20 w-20 object-contain drop-shadow-lg" />
+                    <img src="/logo.png" alt="GP MiniMart Logo" className="h-20 w-20 object-contain drop-shadow-lg" />
                 </div>
 
                 {/* Main Animated Title */}
                 <h1 className="gsap-welcome-title text-4xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 via-cyan-300 to-indigo-300 mb-4 tracking-tight">
-                    Welcome to SwiftCart
+                    Welcome to GP MiniMart
                 </h1>
 
                 {/* Subtitle */}

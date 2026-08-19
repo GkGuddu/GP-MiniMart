@@ -2,7 +2,7 @@ import { MessageCircle } from 'lucide-react';
 
 const WhatsAppButton = () => {
     const phoneNumber = "+91-7367850872"; // Updated number
-    const message = "Hi, I would like to order from your SwiftCart store.";
+    const message = "Hi, I would like to order from your MiniMart.";
 
     const handleClick = () => {
         window.open(`https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`, '_blank');

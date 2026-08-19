@@ -87,7 +87,7 @@ const CheckoutPage = () => {
                 key: import.meta.env.VITE_RAZORPAY_KEY_ID || rzpOrder.key,
                 amount: rzpOrder.amount,
                 currency: rzpOrder.currency,
-                name: 'SwiftCart',
+                name: 'GP MiniMart',
                 description: 'Grocery Order Payment',
                 order_id: rzpOrder.id,
                 handler: async (response) => {
@@ -195,7 +195,7 @@ const CheckoutPage = () => {
 
     const finalAmount = promoApplied ? totalPrice - discountDetails.amount : totalPrice;
     const upiId = '7367850872@paytm';
-    const upiQrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=upi://pay?pa=${encodeURIComponent(upiId)}%26pn=SwiftCart%26am=${finalAmount}%26cu=INR`;
+    const upiQrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=upi://pay?pa=${encodeURIComponent(upiId)}%26pn=GP%20MiniMart%26am=${finalAmount}%26cu=INR`;
 
     return (
         <div className="max-w-4xl mx-auto px-4 py-10">

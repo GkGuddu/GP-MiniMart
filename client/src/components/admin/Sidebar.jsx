@@ -72,10 +72,10 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
                 {/* Logo Area */}
                 <div className="flex items-center justify-between h-16 px-6 bg-slate-950/50 border-b border-slate-800">
                     <Link to="/" className="flex items-center space-x-2">
-                        <img src="/logo.png" alt="SwiftCart" className="h-10 w-auto" />
-                        <div className="text-xl font-bold text-white tracking-wide">
-                            SwiftCart <span className="text-green-500 text-xs uppercase tracking-wider block -mt-1">Admin Panel</span>
-                        </div>
+                        <img src="/logo.png" alt="MiniMart" className="h-10 w-auto" />
+                        <span className="text-xl font-bold text-white tracking-wide">
+                            MiniMart <span className="text-green-500 text-xs uppercase tracking-wider block -mt-1">Admin Panel</span>
+                        </span>
                     </Link>
                     <button onClick={() => setIsOpen(false)} className="md:hidden text-slate-400 hover:text-white">
                         <X size={24} />

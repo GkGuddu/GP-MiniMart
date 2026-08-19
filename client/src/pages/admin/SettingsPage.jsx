@@ -7,7 +7,7 @@ const SettingsPage = () => {
     const [activeTab, setActiveTab] = useState('general');
     const [loading, setLoading] = useState(true);
     const [settings, setSettings] = useState({
-        storeName: 'My Kirana Store',
+        storeName: 'GP MiniMart',
         email: 'admin@example.com',
         contactNumber: '+91 98765 43210',
         address: 'Local Market, City',

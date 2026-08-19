@@ -114,7 +114,7 @@ const OrderSuccessPage = () => {
                 </div>
 
                 <p className="text-xs text-gray-400 mt-6 flex items-center justify-center">
-                    Thank you for choosing SwiftCart <Heart size={12} className="ml-1 text-red-500 fill-red-500" />
+                    Thank you for choosing GP MiniMart <Heart size={12} className="ml-1 text-red-500 fill-red-500" />
                 </p>
             </div>
         </div>

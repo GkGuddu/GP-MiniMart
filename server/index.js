@@ -55,7 +55,7 @@ app.use('/api/settings', require('./routes/settingsRoutes'));
 app.use('/api/ai', require('./routes/aiRoutes'));
 
 app.get('/', (req, res) => {
-    res.send('Kirana Shop API is running...');
+    res.send('GP MiniMart API is running...');
 });
 
 app.use(notFound);
