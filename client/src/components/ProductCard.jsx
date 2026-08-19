@@ -59,7 +59,7 @@ const ProductCard = memo(({ product }) => {
                 )}
 
                 {product.isFeatured && (
-                    <div className="absolute top-2 left-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white px-2 py-0.5 rounded-full text-[10px] font-extrabold shadow-sm tracking-wider z-10">
+                    <div className="absolute top-2 left-2 bg-linear-to-r from-amber-500 to-orange-500 text-white px-2 py-0.5 rounded-full text-[10px] font-extrabold shadow-sm tracking-wider z-10">
                         FEATURED
                     </div>
                 )}
