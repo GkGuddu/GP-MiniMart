@@ -1,9 +1,9 @@
 import { Routes, Route, Navigate, BrowserRouter } from 'react-router-dom';
 import { GoogleOAuthProvider } from '@react-oauth/google';
+
 import Navbar from './components/Navbar';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
-
 import HomePage from './pages/HomePage';
 import ShopPage from './pages/ShopPage';
 import ProductPage from './pages/ProductPage';
@@ -20,7 +20,6 @@ import ProductsPage from './pages/admin/ProductsPage';
 import ProductFormPage from './pages/admin/ProductFormPage';
 import OrdersPage from './pages/admin/OrdersPage';
 import OrderDetailPage from './pages/admin/OrderDetailPage';
-
 import UsersPage from './pages/admin/UsersPage';
 import CategoriesPage from './pages/admin/CategoriesPage';
 import ReportsPage from './pages/admin/ReportsPage';
@@ -28,18 +27,13 @@ import SettingsPage from './pages/admin/SettingsPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
-
-import Toaster from 'react-hot-toast';
 import Footer from './components/Footer';
 import WhatsAppButton from './components/WhatsAppButton';
 import BackToTop from './components/BackToTop';
-
 import BlogPage from './pages/BlogPage';
 import BlogPostPage from './pages/BlogPostPage';
-
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
-
 import WelcomePage from './pages/WelcomePage';
 
 function App() {

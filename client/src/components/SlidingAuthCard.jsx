@@ -110,7 +110,7 @@ const SlidingAuthCard = ({ initialIsSignUp = false }) => {
     };
 
     return (
-        <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 relative overflow-hidden">
+        <div className="min-h-screen bg-gradient-to-br from-slate-100 via-indigo-50/70 to-purple-100/80 flex items-center justify-center p-4 relative overflow-hidden">
             {/* Top Back to Home Button */}
             <div className="absolute top-6 left-6 z-30">
                 <Link

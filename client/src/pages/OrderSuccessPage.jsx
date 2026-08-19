@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { CheckCircle2, ShoppingBag, Truck, ArrowRight, ShieldCheck, Heart } from 'lucide-react';
+import { motion } from 'framer-motion';
 import gsap from 'gsap';
 
 const OrderSuccessPage = () => {
@@ -28,16 +29,20 @@ const OrderSuccessPage = () => {
     }, []);
 
     return (
-        <div className="min-h-[85vh] flex items-center justify-center px-4 py-12 bg-white relative overflow-hidden">
-            <div ref={cardRef} className="w-full max-w-xl bg-white rounded-[32px] shadow-xl p-8 sm:p-12 text-center border border-gray-100 relative z-10">
+        <div className="min-h-[85vh] flex items-center justify-center px-4 py-12 bg-gradient-to-br from-emerald-50/60 via-indigo-50/40 to-purple-50/50 relative overflow-hidden">
+
+            <div ref={cardRef} className="w-full max-w-xl bg-white/90 backdrop-blur-xl rounded-[32px] shadow-2xl p-8 sm:p-12 text-center border border-white/80 relative z-10">
+                
+                {/* Animated Checkmark Badge */}
                 <div className="flex justify-center mb-6">
-                    <div ref={checkRef} className="w-24 h-24 rounded-full bg-emerald-600 text-white flex items-center justify-center shadow-md">
+                    <div ref={checkRef} className="w-24 h-24 rounded-full bg-gradient-to-tr from-emerald-500 to-teal-400 text-white flex items-center justify-center shadow-xl shadow-emerald-500/30">
                         <CheckCircle2 size={56} strokeWidth={2.5} />
                     </div>
                 </div>
 
-                <span className="inline-block bg-emerald-100 text-emerald-800 text-xs font-black uppercase tracking-widest px-4 py-1.5 rounded-full mb-3">
-                    Payment Successful!
+                {/* Main Heading */}
+                <span className="inline-block bg-emerald-100 text-emerald-800 text-xs font-black uppercase tracking-widest px-4 py-1.5 rounded-full mb-3 shadow-sm">
+                    🎉 Payment Successful!
                 </span>
 
                 <h1 className="text-3xl sm:text-4xl font-black text-gray-900 tracking-tight mb-3">
@@ -48,8 +53,9 @@ const OrderSuccessPage = () => {
                     Your payment was completed successfully! Your grocery order has been confirmed and is being packed.
                 </p>
 
-                <div className="bg-gray-50 rounded-2xl p-5 mb-8 text-left border border-gray-100 space-y-3">
-                    <div className="flex justify-between items-center text-sm border-b border-gray-200 pb-3">
+                {/* Order Highlights Box */}
+                <div className="bg-gray-50/90 rounded-2xl p-5 mb-8 text-left border border-gray-100 space-y-3">
+                    <div className="flex justify-between items-center text-sm border-b border-gray-200/80 pb-3">
                         <span className="text-gray-500 font-medium flex items-center">
                             <ShieldCheck size={16} className="mr-1.5 text-emerald-600" /> Payment Status
                         </span>
@@ -60,11 +66,11 @@ const OrderSuccessPage = () => {
 
                     {order && (
                         <>
-                            <div className="flex justify-between items-center text-sm border-b border-gray-200 pb-3">
+                            <div className="flex justify-between items-center text-sm border-b border-gray-200/80 pb-3">
                                 <span className="text-gray-500 font-medium">Order ID</span>
                                 <span className="font-mono font-bold text-gray-900">#{order._id.slice(-8).toUpperCase()}</span>
                             </div>
-                            <div className="flex justify-between items-center text-sm border-b border-gray-200 pb-3">
+                            <div className="flex justify-between items-center text-sm border-b border-gray-200/80 pb-3">
                                 <span className="text-gray-500 font-medium">Amount Paid</span>
                                 <span className="font-black text-indigo-600 text-base">₹{order.totalPrice}</span>
                             </div>
@@ -75,14 +81,15 @@ const OrderSuccessPage = () => {
                         <span className="text-gray-500 font-medium flex items-center">
                             <Truck size={16} className="mr-1.5 text-indigo-600" /> Estimated Delivery
                         </span>
-                        <span className="font-bold text-gray-900">20 - 30 Minutes</span>
+                        <span className="font-bold text-gray-900">20 - 30 Minutes ⚡</span>
                     </div>
                 </div>
 
+                {/* Action Buttons */}
                 <div className="flex flex-col sm:flex-row gap-3">
                     <Link
                         to="/myorders"
-                        className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white py-3.5 px-6 rounded-2xl font-bold text-sm shadow-md transition-all flex items-center justify-center group"
+                        className="flex-1 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white py-3.5 px-6 rounded-2xl font-bold text-sm shadow-lg shadow-indigo-500/25 transition-all flex items-center justify-center group"
                     >
                         <ShoppingBag size={18} className="mr-2" /> Track My Order <ArrowRight size={16} className="ml-1.5 group-hover:translate-x-1 transition-transform" />
                     </Link>
