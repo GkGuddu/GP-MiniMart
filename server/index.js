@@ -4,6 +4,7 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const http = require('http');
 const socketIo = require('socket.io');
+const compression = require('compression');
 
 dotenv.config();
 
@@ -21,21 +22,11 @@ const io = socketIo(server, {
 app.set('io', io);
 
 io.on('connection', (socket) => {
-    console.log('Socket connected:', socket.id);
-
     socket.on('joinOrderRoom', (orderId) => {
         socket.join(orderId);
-        console.log(`Socket joined order room: ${orderId}`);
-    });
-
-    socket.on('disconnect', () => {
-        console.log('Socket disconnected:', socket.id);
     });
 });
 
-const compression = require('compression');
-
-// Middleware
 app.use(express.json());
 app.use(cors());
 app.use(compression());
@@ -43,12 +34,8 @@ app.use(require('helmet')({
     crossOriginOpenerPolicy: { policy: "same-origin-allow-popups" }
 }));
 
-// Database Connection
-mongoose.connect(process.env.MONGO_URI)
-    .then(() => console.log('MongoDB Connected'))
-    .catch((err) => console.error('MongoDB Connection Error:', err));
+mongoose.connect(process.env.MONGO_URI);
 
-// Routes
 const userRoutes = require('./routes/userRoutes');
 const productRoutes = require('./routes/productRoutes');
 const orderRoutes = require('./routes/orderRoutes');
@@ -73,7 +60,4 @@ app.get('/', (req, res) => {
 app.use(notFound);
 app.use(errorHandler);
 
-// Start Server
-server.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-});
+server.listen(PORT);

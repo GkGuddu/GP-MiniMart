@@ -3,9 +3,6 @@ const router = express.Router();
 const Product = require('../models/Product');
 const { protect, admin } = require('../middleware/authMiddleware');
 
-// @desc    Fetch products with pagination, filtering & lean projection
-// @route   GET /api/products
-// @access  Public
 router.get('/', async (req, res) => {
     try {
         const page = Math.max(1, parseInt(req.query.pageNumber || req.query.page || 1));
@@ -14,7 +11,6 @@ router.get('/', async (req, res) => {
 
         const { category, search, sortBy, priceRange, all } = req.query;
 
-        // If 'all=true' is requested (for legacy admin queries or complete listings)
         if (all === 'true') {
             const products = await Product.find({})
                 .select('name price mrp image category subcategory stock unit rating numReviews isFeatured isActive brand createdAt description')
@@ -24,16 +20,10 @@ router.get('/', async (req, res) => {
 
         const query = { isActive: { $ne: false } };
 
-        // Category Filter
         if (category && category !== 'All' && category !== 'all') {
-            if (category.match(/^[0-9a-fA-F]{24}$/)) {
-                query.category = category;
-            } else {
-                query.category = category;
-            }
+            query.category = category;
         }
 
-        // Search Filter
         if (search && search.trim()) {
             const regex = new RegExp(search.trim(), 'i');
             query.$or = [
@@ -43,7 +33,6 @@ router.get('/', async (req, res) => {
             ];
         }
 
-        // Price Range Filter
         if (priceRange && priceRange !== 'all') {
             if (priceRange === '200+') {
                 query.price = { $gte: 200 };
@@ -55,7 +44,6 @@ router.get('/', async (req, res) => {
             }
         }
 
-        // Sort Options
         let sort = { createdAt: -1 };
         if (sortBy === 'low-high') {
             sort = { price: 1 };
@@ -75,7 +63,6 @@ router.get('/', async (req, res) => {
 
         const pages = Math.ceil(total / limit) || 1;
 
-        // Return array for backwards compatibility if no pagination params were provided
         if (!req.query.page && !req.query.pageNumber && !req.query.limit && !req.query.category && !req.query.search && !req.query.priceRange && !req.query.sortBy) {
             return res.json(products);
         }
@@ -88,14 +75,10 @@ router.get('/', async (req, res) => {
             hasMore: page < pages
         });
     } catch (error) {
-        console.error('Error fetching products:', error);
         res.status(500).json({ message: 'Server error fetching products' });
     }
 });
 
-// @desc    Fetch single product
-// @route   GET /api/products/:id
-// @access  Public
 router.get('/:id', async (req, res) => {
     try {
         const product = await Product.findById(req.params.id).lean();
@@ -109,9 +92,6 @@ router.get('/:id', async (req, res) => {
     }
 });
 
-// @desc    Create new review
-// @route   POST /api/products/:id/reviews
-// @access  Private
 router.post('/:id/reviews', protect, async (req, res) => {
     const { rating, comment } = req.body;
     const product = await Product.findById(req.params.id);
@@ -147,9 +127,6 @@ router.post('/:id/reviews', protect, async (req, res) => {
     }
 });
 
-// @desc    Create a product
-// @route   POST /api/products
-// @access  Private/Admin
 router.post('/', protect, admin, async (req, res) => {
     try {
         const { name, price, description, image, brand, category, subcategory, stock, unit, mrp, expiryDate, gst, isActive } = req.body;
@@ -178,9 +155,6 @@ router.post('/', protect, admin, async (req, res) => {
     }
 });
 
-// @desc    Update product stock (Quick Edit)
-// @route   PATCH /api/products/:id/stock
-// @access  Private/Admin
 router.patch('/:id/stock', protect, admin, async (req, res) => {
     const { stock } = req.body;
     const product = await Product.findById(req.params.id);
@@ -194,16 +168,12 @@ router.patch('/:id/stock', protect, admin, async (req, res) => {
     }
 });
 
-// @desc    Update a product
-// @route   PUT /api/products/:id
-// @access  Private/Admin
 router.put('/:id', protect, admin, async (req, res) => {
     const { name, price, description, image, brand, category, stock, unit } = req.body;
 
     const product = await Product.findById(req.params.id);
 
     if (product) {
-        product.name = name;
         product.name = name;
         product.price = price;
         product.description = description;
@@ -225,9 +195,6 @@ router.put('/:id', protect, admin, async (req, res) => {
     }
 });
 
-// @desc    Delete a product
-// @route   DELETE /api/products/:id
-// @access  Private/Admin
 router.delete('/:id', protect, admin, async (req, res) => {
     const product = await Product.findById(req.params.id);
 

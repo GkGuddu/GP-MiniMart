@@ -1,18 +1,5 @@
 const BackgroundAnimation = () => {
-    return (
-        <ul className="circles">
-            <li></li>
-            <li></li>
-            <li></li>
-            <li></li>
-            <li></li>
-            <li></li>
-            <li></li>
-            <li></li>
-            <li></li>
-            <li></li>
-        </ul>
-    );
+    return null;
 };
 
 export default BackgroundAnimation;

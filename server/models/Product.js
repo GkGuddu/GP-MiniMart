@@ -45,7 +45,7 @@ const productSchema = new mongoose.Schema({
         min: 0,
     },
     unit: {
-        type: String, // e.g., '1kg', '500g', '1L', 'Packet'
+        type: String,
         required: true,
     },
     gst: {
@@ -83,7 +83,6 @@ const productSchema = new mongoose.Schema({
     },
 }, { timestamps: true });
 
-// Add indexes for high performance querying
 productSchema.index({ category: 1, createdAt: -1 });
 productSchema.index({ isActive: 1, category: 1 });
 productSchema.index({ price: 1 });

@@ -12,7 +12,6 @@ const ShopPage = () => {
     const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
     
-    // Pagination state
     const [page, setPage] = useState(1);
     const [pages, setPages] = useState(1);
     const [totalProducts, setTotalProducts] = useState(0);
@@ -24,18 +23,15 @@ const ShopPage = () => {
     const [priceRange, setPriceRange] = useState('all');
     const [sortBy, setSortBy] = useState('default');
 
-    // Parse URL params
     const searchParams = useMemo(() => new URLSearchParams(location.search), [location.search]);
     const urlCategory = searchParams.get('category');
     const urlSearch = searchParams.get('search') || '';
     const urlPage = parseInt(searchParams.get('page') || '1');
 
-    // Sync state with URL params
     useEffect(() => {
         setPage(urlPage > 0 ? urlPage : 1);
     }, [urlPage]);
 
-    // Fetch categories on mount with cache
     useEffect(() => {
         let isMounted = true;
         const loadCategories = async () => {
@@ -54,14 +50,12 @@ const ShopPage = () => {
 
                 setCategories([{ name: 'All', icon: '🛍️', _id: 'all' }, ...fetchedCats]);
             } catch (error) {
-                console.error('Error fetching categories:', error);
             }
         };
         loadCategories();
         return () => { isMounted = false; };
     }, []);
 
-    // Set selected category based on URL
     useEffect(() => {
         if (urlCategory) {
             const foundCat = categories.find(c => c.name === urlCategory || c.name.includes(urlCategory));
@@ -74,7 +68,6 @@ const ShopPage = () => {
         }
     }, [urlCategory, urlSearch, categories]);
 
-    // Fetch products with server-side pagination, caching, and deduplication
     useEffect(() => {
         let isMounted = true;
         setLoading(true);
@@ -119,7 +112,6 @@ const ShopPage = () => {
                     setProducts([]);
                 }
             } catch (error) {
-                console.error('Error fetching products:', error);
                 if (isMounted) setProducts([]);
             } finally {
                 if (isMounted) setLoading(false);
@@ -131,7 +123,6 @@ const ShopPage = () => {
         return () => { isMounted = false; };
     }, [page, selectedCategory, urlSearch, priceRange, sortBy]);
 
-    // Handlers
     const handleCategoryClick = useCallback((catName) => {
         const params = new URLSearchParams(location.search);
         params.set('page', '1');
@@ -170,14 +161,10 @@ const ShopPage = () => {
     }, [navigate]);
 
     return (
-        <div className="bg-slate-50/50 min-h-screen">
+        <div className="bg-white min-h-screen">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
                 <div className="flex flex-col md:flex-row gap-6 lg:gap-8">
-                    
-                    {/* Sidebar / Filters */}
                     <div className="w-full md:w-64 flex-shrink-0 space-y-6">
-                        
-                        {/* Categories Section */}
                         <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm hidden md:block">
                             <h3 className="font-extrabold text-base mb-3.5 text-slate-900 flex items-center justify-between">
                                 Top Categories
@@ -201,7 +188,6 @@ const ShopPage = () => {
                             </div>
                         </div>
 
-                        {/* Filters Section */}
                         <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm sticky top-24 space-y-6">
                             <div>
                                 <div className="flex justify-between items-center mb-4">
@@ -219,7 +205,6 @@ const ShopPage = () => {
                                     )}
                                 </div>
 
-                                {/* Search Bar */}
                                 <div className="mb-5 relative">
                                     <input
                                         type="text"
@@ -231,7 +216,6 @@ const ShopPage = () => {
                                     <Search size={16} className="absolute left-3 top-3 text-slate-400" />
                                 </div>
 
-                                {/* Sort By */}
                                 <div className="mb-5">
                                     <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Sort By</label>
                                     <select
@@ -245,7 +229,6 @@ const ShopPage = () => {
                                     </select>
                                 </div>
 
-                                {/* Price Range */}
                                 <div>
                                     <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Price Range</label>
                                     <div className="space-y-1.5">
@@ -275,11 +258,8 @@ const ShopPage = () => {
                         </div>
                     </div>
 
-                    {/* Product Grid & Main Content */}
                     <div className="flex-1 space-y-6">
-                        
-                        {/* Header Banner (Clean Layout - No heavy floating graphics) */}
-                        <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-3xl p-6 sm:p-8 text-white shadow-xl">
+                        <div className="bg-slate-900 rounded-3xl p-6 sm:p-8 text-white shadow-md">
                             <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
                                 <div>
                                     <span className="inline-block px-3 py-1 rounded-full bg-white/10 text-indigo-300 text-xs font-bold uppercase tracking-wider mb-2">
@@ -303,7 +283,6 @@ const ShopPage = () => {
                             </div>
                         </div>
 
-                        {/* Products Grid */}
                         {loading ? (
                             <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
                                 {[...Array(8)].map((_, i) => (
@@ -318,7 +297,6 @@ const ShopPage = () => {
                                     ))}
                                 </div>
 
-                                {/* Pagination Controls */}
                                 {pages > 1 && (
                                     <div className="flex items-center justify-center space-x-2 pt-8 pb-4">
                                         <button

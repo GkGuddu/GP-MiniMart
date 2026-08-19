@@ -11,7 +11,6 @@ const ProductCard = memo(({ product }) => {
     const { addToCart, decreaseFromCart, cartItems } = useContext(CartContext);
     const { user } = useContext(AuthContext);
 
-    // Find if item is in cart
     const cartItem = cartItems?.find((item) => item._id === product._id);
 
     const handleAddToCart = useCallback((e) => {
@@ -40,7 +39,6 @@ const ProductCard = memo(({ product }) => {
             onClick={handleCardClick}
             className="group relative bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden cursor-pointer transition-all duration-300 hover:shadow-xl hover:shadow-indigo-100/50 hover:-translate-y-1 flex flex-col justify-between h-[330px]"
         >
-            {/* Image Section */}
             <div className="relative h-40 w-full bg-slate-50 flex items-center justify-center p-3">
                 {product.image ? (
                     <LazyImage
@@ -67,7 +65,6 @@ const ProductCard = memo(({ product }) => {
                 )}
             </div>
 
-            {/* Content Section */}
             <div className="p-4 flex-1 flex flex-col justify-between bg-white">
                 <div>
                     <div className="flex items-center justify-between mb-1.5">

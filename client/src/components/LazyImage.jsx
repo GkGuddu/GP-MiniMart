@@ -7,12 +7,10 @@ const LazyImage = memo(({ src, alt, className, ...props }) => {
 
     return (
         <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
-            {/* Skeleton loader while image is fetching */}
             {!loaded && !error && (
                 <div className="absolute inset-0 bg-slate-200 animate-pulse rounded-2xl" />
             )}
 
-            {/* Error fallback */}
             {error ? (
                 <div className="w-full h-full flex items-center justify-center text-slate-300 bg-slate-50 rounded-2xl">
                     <ShoppingBag size={32} />

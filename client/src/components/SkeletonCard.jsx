@@ -3,10 +3,7 @@ import { memo } from 'react';
 const SkeletonCard = memo(() => {
     return (
         <div className="bg-white rounded-3xl p-4 border border-slate-100 shadow-sm animate-pulse flex flex-col justify-between h-[320px]">
-            {/* Image Placeholder */}
             <div className="h-40 bg-slate-200 rounded-2xl w-full mb-3" />
-            
-            {/* Content Placeholder */}
             <div className="space-y-2">
                 <div className="flex justify-between items-center">
                     <div className="h-3 bg-slate-200 rounded-md w-1/4" />
