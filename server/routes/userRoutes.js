@@ -322,9 +322,9 @@ router.post('/forgotpassword', async (req, res) => {
         // Send confirmation notification email
         sendEmail({
             to: user.email,
-            subject: 'SwiftCart - Password Updated Successfully',
+            subject: 'GP MiniMart - Password Updated Successfully',
             text: `Hello ${user.name}, your account password has been updated successfully.`,
-            html: `<div style="font-family: Arial; padding: 24px; max-width: 500px; margin: 0 auto; border: 1px solid #e5e7eb; border-radius: 12px;"><h2 style="color: #059669; text-align: center;">✅ Password Updated</h2><p>Hello <strong>${user.name}</strong>,</p><p>Your SwiftCart account password has been reset successfully.</p></div>`,
+            html: `<div style="font-family: Arial; padding: 24px; max-width: 500px; margin: 0 auto; border: 1px solid #e5e7eb; border-radius: 12px;"><h2 style="color: #059669; text-align: center;">✅ Password Updated</h2><p>Hello <strong>${user.name}</strong>,</p><p>Your GP MiniMart account password has been reset successfully.</p></div>`,
         }).catch(err => console.log('Notification email error:', err.message));
 
         return res.status(200).json({
@@ -381,15 +381,15 @@ router.post('/resetpassword-otp', async (req, res) => {
         <div style="font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 12px; padding: 24px; background: #ffffff;">
             <h2 style="color: #059669; text-align: center;">✅ Password Reset Successful</h2>
             <p style="color: #374151;">Hello <strong>${user.name}</strong>,</p>
-            <p style="color: #4b5563;">Your SwiftCart account password has been updated successfully.</p>
+            <p style="color: #4b5563;">Your GP MiniMart account password has been updated successfully.</p>
             <p style="color: #6b7280; font-size: 13px;">If you did not perform this change, please contact support immediately.</p>
         </div>
     `;
 
     await sendEmail({
         to: user.email,
-        subject: 'SwiftCart - Password Changed Successfully',
-        text: `Hello ${user.name}, your password for SwiftCart has been changed successfully.`,
+        subject: 'GP MiniMart - Password Changed Successfully',
+        text: `Hello ${user.name}, your password for GP MiniMart has been changed successfully.`,
         html: confirmationHtml,
     });
 

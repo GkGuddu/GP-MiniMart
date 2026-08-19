@@ -23,7 +23,7 @@ const renderMessageText = (text) => {
 const AIAssistant = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [messages, setMessages] = useState([
-        { text: "Hi! I'm your SwiftCart AI Assistant. How can I help you today?", isBot: true }
+        { text: "Hi! I'm your GP MiniMart AI Assistant. How can I help you today?", isBot: true }
     ]);
     const [input, setInput] = useState('');
     const [isTyping, setIsTyping] = useState(false);
@@ -76,7 +76,7 @@ const AIAssistant = () => {
                                     <Bot size={24} className="text-white" />
                                 </div>
                                 <div>
-                                    <h3 className="font-bold text-sm tracking-wide">SwiftCart AI</h3>
+                                    <h3 className="font-bold text-sm tracking-wide">GP MiniMart AI</h3>
                                     <p className="text-xs text-indigo-100 mt-0.5 flex items-center">
                                         <span className="w-1.5 h-1.5 bg-green-400 rounded-full mr-1 px-0 shadow-[0_0_5px_rgba(74,222,128,0.8)]"></span>
                                         Online | Replies instantly

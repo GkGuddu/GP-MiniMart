@@ -27,8 +27,8 @@ const InvoiceComponent = ({ order, onClose }) => {
                     {/* Header */}
                     <div className="flex justify-between mb-8">
                         <div>
-                            <h1 className="text-3xl font-bold text-indigo-600">SwiftCart</h1>
-                            <p className="text-gray-500">Shop Smarter, Faster</p>
+                            <h1 className="text-3xl font-bold text-indigo-600">GP MiniMart</h1>
+                            <p className="text-gray-500">Your Trusted Grocery Partner</p>
                             <p className="text-gray-500 text-sm mt-1">123, Market Road, City, India</p>
                             <p className="text-gray-500 text-sm">GSTIN: 29ABCDE1234F1Z5</p>
                         </div>
@@ -97,8 +97,8 @@ const InvoiceComponent = ({ order, onClose }) => {
 
                     {/* Footer */}
                     <div className="mt-12 text-center text-gray-500 text-sm">
-                        <p>Thank you for shopping with SwiftCart!</p>
-                        <p>For any queries, contact support@swiftcart.com</p>
+                        <p>Thank you for shopping with MiniMart!</p>
+                        <p>For any queries, contact support@minimart.com</p>
                     </div>
                 </div>
             </div>

@@ -68,7 +68,7 @@ const Footer = () => {
                         <Link to="/home" className="flex items-center space-x-2 group">
                             <span className="text-4xl">🛍️</span>
                             <span className="text-2xl font-bold bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">
-                                {settings?.storeName || 'SwiftCart'}
+                                {settings?.storeName || 'MiniMart'}
                             </span>
                         </Link>
                         <p className="text-gray-400 leading-relaxed">
@@ -122,7 +122,7 @@ const Footer = () => {
                         <ul className="space-y-5">
                             <li className="flex items-start text-gray-400">
                                 <MapPin size={22} className="mr-3 mt-1 text-primary flex-shrink-0" />
-                                <span>{settings?.address || 'SwiftCart Hub, Indrapuri, Bhopal, India 462022'}</span>
+                                <span>{settings?.address || 'Indrapuri, GP MiniMart, Bhopal, India 462022'}</span>
                             </li>
                             <li className="flex items-center text-gray-400">
                                 <Phone size={20} className="mr-3 text-primary flex-shrink-0" />
@@ -130,14 +130,14 @@ const Footer = () => {
                             </li>
                             <li className="flex items-center text-gray-400">
                                 <Mail size={20} className="mr-3 text-primary flex-shrink-0" />
-                                <span>{settings?.email || 'support@swiftcart.com'}</span>
+                                <span>{settings?.email || 'support@minimart.com'}</span>
                             </li>
                         </ul>
                     </div>
                 </div>
 
                 <div className="flex flex-col md:flex-row justify-between items-center text-gray-500 text-sm gap-4">
-                    <p>&copy; {currentYear} {settings?.storeName || 'SwiftCart'}</p>
+                    <p>&copy; {currentYear} {settings?.storeName || 'MiniMart'}</p>
                     <div className="flex space-x-8">
                         <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
                         <a href="#" className="hover:text-white transition-colors">Terms of Service</a>

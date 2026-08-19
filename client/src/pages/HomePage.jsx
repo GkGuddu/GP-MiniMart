@@ -119,7 +119,7 @@ const HomePage = () => {
                             📍 YOUR NEIGHBOURHOOD STORE
                         </span>
                         <h1 className="gsap-hero-title text-4xl md:text-6xl font-extrabold mb-6 leading-tight relative z-10 text-white">
-                            Your Daily SwiftCart, <br />
+                            Your Daily MiniMart, <br />
                             <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-orange-300 to-amber-400">Now Online.</span>
                         </h1>
                         <p className="gsap-hero-text text-lg text-gray-200 mb-8 leading-relaxed font-medium relative z-10">
