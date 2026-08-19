@@ -18,7 +18,7 @@ const AboutPage = () => {
         fetchSettings();
     }, []);
 
-    const storeName = settings?.storeName || 'GP-MiniMart';
+    const storeName = settings?.storeName || 'SwiftCart';
     const mission = settings?.aboutUsSnippet || 'bringing the traditional warmth of your local Kirana store to the digital age.';
 
     return (
