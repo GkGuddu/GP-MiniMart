@@ -141,9 +141,37 @@ router.get('/:id', protect, async (req, res) => {
     const order = await Order.findById(req.params.id).populate('user', 'name email');
 
     if (order) {
+        if (order.user._id.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
+            return res.status(403).json({ message: 'Not authorized to view this order' });
+        }
         res.json(order);
     } else {
         res.status(404).json({ message: 'Order not found' });
+    }
+});
+
+router.get('/:id/invoice', protect, async (req, res) => {
+    try {
+        const order = await Order.findById(req.params.id).populate('user', 'name email');
+
+        if (!order) {
+            return res.status(404).json({ message: 'Order not found' });
+        }
+
+        if (order.user._id.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
+            return res.status(403).json({ message: 'Not authorized to access this invoice' });
+        }
+
+        if (!order.invoiceNumber) {
+            const year = new Date(order.createdAt || Date.now()).getFullYear();
+            const code = order._id.toString().slice(-6).toUpperCase();
+            order.invoiceNumber = `GPM-INV-${year}-${code}`;
+            await order.save();
+        }
+
+        res.json(order);
+    } catch (error) {
+        res.status(500).json({ message: 'Server error retrieving invoice' });
     }
 });
 

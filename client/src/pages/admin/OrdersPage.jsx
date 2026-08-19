@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Eye, Search, Filter } from 'lucide-react';
+import { Eye, Search, Filter, FileText } from 'lucide-react';
 import api from '../../utils/api';
 import toast from 'react-hot-toast';
+import { generateInvoicePDF } from '../../utils/generateInvoicePDF';
 
 const OrdersPage = () => {
     const [orders, setOrders] = useState([]);
@@ -153,7 +154,14 @@ const OrdersPage = () => {
                                                     <option value="Cancelled">Cancelled</option>
                                                 </select>
                                             </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => generateInvoicePDF(order)}
+                                                    className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded text-emerald-700 bg-emerald-100 hover:bg-emerald-200"
+                                                >
+                                                    <FileText size={16} className="mr-1" /> Invoice
+                                                </button>
                                                 <Link
                                                     to={`/admin/orders/${order._id}`}
                                                     className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded text-indigo-700 bg-indigo-100 hover:bg-indigo-200"

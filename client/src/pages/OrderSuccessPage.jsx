@@ -1,8 +1,9 @@
 import { useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { CheckCircle2, ShoppingBag, Truck, ArrowRight, ShieldCheck, Heart } from 'lucide-react';
+import { CheckCircle2, ShoppingBag, Truck, ArrowRight, ShieldCheck, Heart, FileText } from 'lucide-react';
 import { motion } from 'framer-motion';
 import gsap from 'gsap';
+import { generateInvoicePDF } from '../utils/generateInvoicePDF';
 
 const OrderSuccessPage = () => {
     const location = useLocation();
@@ -87,6 +88,16 @@ const OrderSuccessPage = () => {
 
                 {/* Action Buttons */}
                 <div className="flex flex-col sm:flex-row gap-3">
+                    {order && (
+                        <button
+                            type="button"
+                            onClick={() => generateInvoicePDF(order)}
+                            className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-3.5 px-6 rounded-2xl font-bold text-sm shadow-lg shadow-emerald-500/25 transition-all flex items-center justify-center"
+                        >
+                            <FileText size={18} className="mr-2" /> Download Invoice PDF
+                        </button>
+                    )}
+
                     <Link
                         to="/myorders"
                         className="flex-1 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white py-3.5 px-6 rounded-2xl font-bold text-sm shadow-lg shadow-indigo-500/25 transition-all flex items-center justify-center group"

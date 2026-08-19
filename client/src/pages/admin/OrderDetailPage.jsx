@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Loader, Package, Truck, CreditCard, Calendar, User, MapPin } from 'lucide-react';
+import { ArrowLeft, Loader, Package, Truck, CreditCard, Calendar, User, MapPin, FileText } from 'lucide-react';
 import api from '../../utils/api';
 import toast from 'react-hot-toast';
 import { io } from 'socket.io-client';
+import { generateInvoicePDF } from '../../utils/generateInvoicePDF';
 
 const OrderDetailPage = () => {
     const { id } = useParams();
@@ -88,6 +89,13 @@ const OrderDetailPage = () => {
                     </div>
                 </div>
                 <div className="flex items-center space-x-2">
+                    <button
+                        type="button"
+                        onClick={() => generateInvoicePDF(order)}
+                        className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-bold text-sm shadow-sm flex items-center transition-colors"
+                    >
+                        <FileText size={16} className="mr-1.5" /> Download Invoice PDF
+                    </button>
                     <select
                         value={order.status}
                         onChange={(e) => handleStatusUpdate(e.target.value)}

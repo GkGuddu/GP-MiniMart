@@ -4,6 +4,7 @@ import { Package, Truck, CheckCircle, Clock, FileText, Ban } from 'lucide-react'
 import toast from 'react-hot-toast';
 import { io } from 'socket.io-client';
 import InvoiceComponent from '../components/InvoiceComponent';
+import { generateInvoicePDF } from '../utils/generateInvoicePDF';
 
 const MyOrdersPage = () => {
     const [orders, setOrders] = useState([]);
@@ -99,10 +100,10 @@ const MyOrdersPage = () => {
                                         {order.status}
                                     </span>
                                     <button
-                                        onClick={() => setSelectedOrder(order)}
-                                        className="flex items-center text-sm text-indigo-600 hover:text-indigo-800 font-medium"
+                                        onClick={() => generateInvoicePDF(order)}
+                                        className="flex items-center text-sm text-indigo-600 hover:text-indigo-800 font-bold bg-indigo-50 px-3 py-1.5 rounded-lg border border-indigo-100 transition-colors"
                                     >
-                                        <FileText size={16} className="mr-1" /> Invoice
+                                        <FileText size={16} className="mr-1" /> Download Invoice PDF
                                     </button>
                                     {order.status === 'Pending' && (
                                         <button
