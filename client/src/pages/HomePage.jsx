@@ -286,7 +286,6 @@ const HomePage = () => {
 
             {/* Quick Order via WhatsApp - Kirana Special with GSAP Floating Graphic */}
             <section className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-3xl p-8 md:p-12 mb-16 flex flex-col md:flex-row items-center justify-between gap-12 border border-green-100 shadow-sm relative overflow-hidden">
-                <div className="absolute top-0 right-0 -mt-10 -mr-10 w-40 h-40 bg-green-200 rounded-full opacity-20 blur-3xl"></div>
                 <div className="flex-1 space-y-6 relative z-10">
                     <span className="inline-block px-4 py-1.5 bg-green-100 text-green-700 rounded-full text-xs font-bold tracking-wide uppercase">
                         📝 Fastest Way To Order

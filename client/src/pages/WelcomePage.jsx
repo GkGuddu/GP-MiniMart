@@ -53,10 +53,6 @@ const WelcomePage = () => {
 
     return (
         <div ref={containerRef} className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950 overflow-hidden">
-            {/* Background animated glowing orbs */}
-            <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-indigo-600/30 rounded-full blur-[140px] animate-pulse"></div>
-            <div className="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] bg-emerald-500/30 rounded-full blur-[140px] animate-pulse"></div>
-
             <div className="relative text-center z-10 p-8 flex flex-col items-center max-w-xl">
                 {/* Logo Badge */}
                 <div className="gsap-welcome-logo mb-6 flex items-center justify-center h-28 w-28 bg-white/10 rounded-3xl backdrop-blur-xl border border-white/20 shadow-[0_0_50px_rgba(79,70,229,0.3)]">
